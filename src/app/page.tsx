@@ -5,11 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SystemVitals } from "@/components/layout/SystemVitals";
 import { TaskCard } from "@/components/nebula/TaskCard";
 import { DecisionDock } from "@/components/nebula/DecisionDock";
-import type { Task, DecisionOrb as DecisionOrbType, SystemStat } from "@/lib/types";
+import type { Task, DecisionOrbSummary, SystemStat } from "@/lib/types";
 
 export default function OverviewNebula() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [decisions, setDecisions] = useState<DecisionOrbType[]>([]);
+  const [decisions, setDecisions] = useState<DecisionOrbSummary[]>([]);
   const [stats, setStats] = useState<SystemStat[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,7 +43,7 @@ export default function OverviewNebula() {
     // TaskNodeDetail modal will be wired in Task 3
   };
 
-  const handleOrbClick = (orb: DecisionOrbType) => {
+  const handleOrbClick = (orb: DecisionOrbSummary) => {
     // Find associated task and open detail modal
     const task = tasks.find((t) => t.id === orb.taskId);
     if (task) setSelectedTask(task);

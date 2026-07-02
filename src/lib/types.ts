@@ -37,6 +37,23 @@ export interface DecisionOrb {
   requester?: User;
 }
 
+/**
+ * Shape actually returned by GET /api/decisions today — a partial `task`
+ * (id + title only). Distinct from `DecisionOrb`, whose `task?: Task` is the
+ * full contract intended for a future dedicated decisions API.
+ */
+export interface DecisionOrbSummary {
+  id: string;
+  taskId: string;
+  requestedBy: string;
+  contextReason: string;
+  status: DecisionStatus;
+  createdAt: string;
+  resolvedAt: string | null;
+  task?: Pick<Task, "id" | "title">;
+  requester?: User;
+}
+
 export interface TimelineEvent {
   id: string;
   taskId: string;

@@ -3,11 +3,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassPanel } from "@/components/shared/GlassPanel";
 import { DecisionOrb } from "./DecisionOrb";
-import type { DecisionOrb as DecisionOrbType } from "@/lib/types";
+import type { DecisionOrbSummary } from "@/lib/types";
 
 interface DecisionDockProps {
-  orbs: DecisionOrbType[];
-  onOrbClick: (orb: DecisionOrbType) => void;
+  orbs: DecisionOrbSummary[];
+  onOrbClick: (orb: DecisionOrbSummary) => void;
 }
 
 export function DecisionDock({ orbs, onOrbClick }: DecisionDockProps) {

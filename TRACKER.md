@@ -11,9 +11,9 @@
 | Metric           | Value                    |
 |------------------|--------------------------|
 | **Overall**      | 🟡 In Progress           |
-| **Current Phase**| Phase 2 — Overview Nebula |
-| **Current Task** | Task 2                   |
-| **Last Updated** | 2026-07-02T04:42:00Z     |
+| **Current Phase**| Phase 3 — Task Node Detail |
+| **Current Task** | Task 3                   |
+| **Last Updated** | 2026-07-02T05:30:00Z     |
 | **Spec**         | `docs/superpowers/specs/2026-07-02-orbit-system-design.md` |
 | **Plan**         | `docs/superpowers/plans/2026-07-02-orbit-system-plan.md` |
 
@@ -53,13 +53,13 @@
 ## Phase 2: Overview Nebula (Main Dashboard)
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 2.1 | Overview Nebula page layout | ⬜ Not Started | |
-| 2.2 | TaskCard component | ⬜ Not Started | |
-| 2.3 | DecisionOrb component (pulsing animation) | ⬜ Not Started | |
-| 2.4 | DecisionDock right panel | ⬜ Not Started | |
-| 2.5 | API: GET /api/tasks | ⬜ Not Started | |
-| 2.6 | API: GET /api/stats (system vitals) | ⬜ Not Started | |
-| 2.7 | Wire data to Nebula page | ⬜ Not Started | |
+| 2.1 | Overview Nebula page layout | ✅ Complete | |
+| 2.2 | TaskCard component | ✅ Complete | |
+| 2.3 | DecisionOrb component (pulsing animation) | ✅ Complete | |
+| 2.4 | DecisionDock right panel | ✅ Complete | |
+| 2.5 | API: GET /api/tasks | ✅ Complete | |
+| 2.6 | API: GET /api/stats (system vitals) | ✅ Complete | |
+| 2.7 | Wire data to Nebula page | ✅ Complete | |
 
 ## Phase 3: Task Node Detail (Modal)
 | # | Task | Status | Notes |
@@ -121,3 +121,4 @@
 | 2026-07-02 | — | Project tracker created | Claude Opus 4.6 |
 | 2026-07-02 | Task 0 | Scaffolding complete — Next.js 16, TW4, Drizzle, Neon | Claude Opus 4.6 |
 | 2026-07-02 | Task 1 | Layout shell complete — Sidebar, GlassPanel, StatusPulse, SystemVitals | Antigravity |
+| 2026-07-02 | Task 2 | Overview Nebula complete — page layout, TaskCard, DecisionOrb, DecisionDock, /api/tasks, /api/stats, wired to Nebula page | Claude Sonnet 5 |

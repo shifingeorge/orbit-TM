@@ -1,11 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { DecisionOrb as DecisionOrbType } from "@/lib/types";
+import type { DecisionOrbSummary } from "@/lib/types";
 
 interface DecisionOrbProps {
-  orb: DecisionOrbType;
-  onClick: (orb: DecisionOrbType) => void;
+  orb: DecisionOrbSummary;
+  onClick: (orb: DecisionOrbSummary) => void;
 }
 
 export function DecisionOrb({ orb, onClick }: DecisionOrbProps) {
