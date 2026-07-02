@@ -11,9 +11,9 @@
 | Metric           | Value                    |
 |------------------|--------------------------|
 | **Overall**      | 🟡 In Progress           |
-| **Current Phase**| Phase 0 — Project Setup  |
-| **Current Task** | Not started              |
-| **Last Updated** | 2026-07-02T04:07:00Z     |
+| **Current Phase**| Phase 2 — Overview Nebula |
+| **Current Task** | Task 2                   |
+| **Last Updated** | 2026-07-02T04:42:00Z     |
 | **Spec**         | `docs/superpowers/specs/2026-07-02-orbit-system-design.md` |
 | **Plan**         | `docs/superpowers/plans/2026-07-02-orbit-system-plan.md` |
 
@@ -32,23 +32,23 @@
 ## Phase 0: Project Scaffolding
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 0.1 | Initialize Next.js project | ⬜ Not Started | |
-| 0.2 | Install dependencies (Tailwind, Framer Motion, Drizzle, Neon) | ⬜ Not Started | |
-| 0.3 | Configure Tailwind with design tokens | ⬜ Not Started | |
-| 0.4 | Set up global CSS (fonts, tokens, animations) | ⬜ Not Started | |
-| 0.5 | Set up Drizzle + Neon DB connection | ⬜ Not Started | |
-| 0.6 | Define database schema | ⬜ Not Started | |
-| 0.7 | Create seed data script | ⬜ Not Started | |
-| 0.8 | Push schema to Neon DB | ⬜ Not Started | |
+| 0.1 | Initialize Next.js project | ✅ Complete | Next.js 16 + TW4 (adapted from TW3) |
+| 0.2 | Install dependencies (Tailwind, Framer Motion, Drizzle, Neon) | ✅ Complete | |
+| 0.3 | Configure Tailwind with design tokens | ✅ Complete | Uses TW4 @theme block instead of tailwind.config.ts |
+| 0.4 | Set up global CSS (fonts, tokens, animations) | ✅ Complete | |
+| 0.5 | Set up Drizzle + Neon DB connection | ✅ Complete | |
+| 0.6 | Define database schema | ✅ Complete | |
+| 0.7 | Create seed data script | ✅ Complete | |
+| 0.8 | Push schema to Neon DB | ⬜ Not Started | Needs user's DATABASE_URL |
 
 ## Phase 1: Layout Shell & Shared Components
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 1.1 | Root layout (fonts, deep void background, sidebar structure) | ⬜ Not Started | |
-| 1.2 | Sidebar navigation component | ⬜ Not Started | |
-| 1.3 | GlassPanel reusable component | ⬜ Not Started | |
-| 1.4 | StatusPulse animated indicator | ⬜ Not Started | |
-| 1.5 | SystemVitals top bar | ⬜ Not Started | |
+| 1.1 | Root layout (fonts, deep void background, sidebar structure) | ✅ Complete | |
+| 1.2 | Sidebar navigation component | ✅ Complete | |
+| 1.3 | GlassPanel reusable component | ✅ Complete | |
+| 1.4 | StatusPulse animated indicator | ✅ Complete | |
+| 1.5 | SystemVitals top bar | ✅ Complete | |
 
 ## Phase 2: Overview Nebula (Main Dashboard)
 | # | Task | Status | Notes |
@@ -119,3 +119,5 @@
 | Date | Task | Change | Model |
 |------|------|--------|-------|
 | 2026-07-02 | — | Project tracker created | Claude Opus 4.6 |
+| 2026-07-02 | Task 0 | Scaffolding complete — Next.js 16, TW4, Drizzle, Neon | Claude Opus 4.6 |
+| 2026-07-02 | Task 1 | Layout shell complete — Sidebar, GlassPanel, StatusPulse, SystemVitals | Antigravity |

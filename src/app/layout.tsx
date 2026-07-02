@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Sidebar } from "@/components/layout/Sidebar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,7 +14,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <Sidebar />
+        <main className="ml-[72px] min-h-screen relative">
+          {children}
+        </main>
+      </body>
     </html>
   );
 }
