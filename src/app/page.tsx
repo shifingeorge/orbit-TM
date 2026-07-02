@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SystemVitals } from "@/components/layout/SystemVitals";
 import { TaskCard } from "@/components/nebula/TaskCard";
 import { DecisionDock } from "@/components/nebula/DecisionDock";
+import { TaskNodeDetail } from "@/components/shared/TaskNodeDetail";
 import type { Task, DecisionOrbSummary, SystemStat } from "@/lib/types";
 
 export default function OverviewNebula() {
@@ -40,7 +41,6 @@ export default function OverviewNebula() {
 
   const handleTaskClick = (task: Task) => {
     setSelectedTask(task);
-    // TaskNodeDetail modal will be wired in Task 3
   };
 
   const handleOrbClick = (orb: DecisionOrbSummary) => {
@@ -113,6 +113,22 @@ export default function OverviewNebula() {
           <DecisionDock orbs={decisions} onOrbClick={handleOrbClick} />
         </div>
       </div>
+
+      {/* Task Node Detail Modal */}
+      <AnimatePresence>
+        {selectedTask && (
+          <TaskNodeDetail
+            task={selectedTask}
+            onClose={() => setSelectedTask(null)}
+            onGrant={(orbId) => {
+              setDecisions((prev) => prev.filter((d) => d.id !== orbId));
+            }}
+            onDeny={(orbId) => {
+              setDecisions((prev) => prev.filter((d) => d.id !== orbId));
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -11,9 +11,9 @@
 | Metric           | Value                    |
 |------------------|--------------------------|
 | **Overall**      | 🟡 In Progress           |
-| **Current Phase**| Phase 3 — Task Node Detail |
-| **Current Task** | Task 3                   |
-| **Last Updated** | 2026-07-02T05:30:00Z     |
+| **Current Phase**| Phase 4 — Decision Nexus |
+| **Current Task** | Task 4                   |
+| **Last Updated** | 2026-07-02T11:56:00Z     |
 | **Spec**         | `docs/superpowers/specs/2026-07-02-orbit-system-design.md` |
 | **Plan**         | `docs/superpowers/plans/2026-07-02-orbit-system-plan.md` |
 
@@ -64,11 +64,11 @@
 ## Phase 3: Task Node Detail (Modal)
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 3.1 | TaskNodeDetail modal overlay | ⬜ Not Started | |
-| 3.2 | Timeline component (vertical history line) | ⬜ Not Started | |
-| 3.3 | Collaborators stacked avatars | ⬜ Not Started | |
-| 3.4 | API: GET /api/tasks/[id] with timeline + collaborators | ⬜ Not Started | |
-| 3.5 | Wire modal open from TaskCard and DecisionOrb clicks | ⬜ Not Started | |
+| 3.1 | TaskNodeDetail modal overlay | ✅ Complete | Blurred backdrop + scale/translate glass panel, easeInOut curves |
+| 3.2 | Timeline component (vertical history line) | ✅ Complete | |
+| 3.3 | Collaborators stacked avatars | ✅ Complete | Single assigned-user avatar shown (per brief scope; no multi-collaborator stack requested) |
+| 3.4 | API: GET /api/tasks/[id] with timeline + collaborators | ✅ Complete | Next.js 16 async `params` |
+| 3.5 | Wire modal open from TaskCard and DecisionOrb clicks | ✅ Complete | |
 
 ## Phase 4: Decision Nexus
 | # | Task | Status | Notes |
@@ -122,3 +122,4 @@
 | 2026-07-02 | Task 0 | Scaffolding complete — Next.js 16, TW4, Drizzle, Neon | Claude Opus 4.6 |
 | 2026-07-02 | Task 1 | Layout shell complete — Sidebar, GlassPanel, StatusPulse, SystemVitals | Antigravity |
 | 2026-07-02 | Task 2 | Overview Nebula complete — page layout, TaskCard, DecisionOrb, DecisionDock, /api/tasks, /api/stats, wired to Nebula page | Claude Sonnet 5 |
+| 2026-07-02 | Task 3 | Task Node Detail modal complete — TaskNodeDetail, Timeline, /api/tasks/[id], wired from TaskCard/DecisionOrb clicks | Claude Sonnet 5 |
