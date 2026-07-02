@@ -49,7 +49,7 @@ export function Sidebar() {
                   <motion.div
                     className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-primary rounded-r-full"
                     layoutId="activeNav"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
                   />
                 )}
               </motion.div>
