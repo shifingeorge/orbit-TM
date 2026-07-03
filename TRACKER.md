@@ -11,9 +11,9 @@
 | Metric           | Value                    |
 |------------------|--------------------------|
 | **Overall**      | 🟡 In Progress           |
-| **Current Phase**| Phase 5 — Team Orbit     |
-| **Current Task** | Task 5                   |
-| **Last Updated** | 2026-07-03T01:41:00Z     |
+| **Current Phase**| Phase 6 — Polish & Integration |
+| **Current Task** | Task 6                   |
+| **Last Updated** | 2026-07-03T02:15:00Z     |
 | **Spec**         | `docs/superpowers/specs/2026-07-02-orbit-system-design.md` |
 | **Plan**         | `docs/superpowers/plans/2026-07-02-orbit-system-plan.md` |
 
@@ -83,12 +83,12 @@
 ## Phase 5: Team Orbit
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 5.1 | Team Orbit page layout (staggered grid) | ⬜ Not Started | |
-| 5.2 | LoadRing SVG component | ⬜ Not Started | |
-| 5.3 | UserPlanet component (avatar + ring + name) | ⬜ Not Started | |
-| 5.4 | FilterBar component (Active/Blocked/Available) | ⬜ Not Started | |
-| 5.5 | API: GET /api/users with task counts | ⬜ Not Started | |
-| 5.6 | Wire data + filter logic | ⬜ Not Started | |
+| 5.1 | Team Orbit page layout (staggered grid) | ✅ Complete | Staggered `y` offset on alternating grid items, ambient background glows matching Nebula/Decisions pattern |
+| 5.2 | LoadRing SVG component | ✅ Complete | Background ring uses `var(--color-surface-border)` token (not the brief's hardcoded `rgba(255,255,255,0.05)`); animated foreground arc via `strokeDasharray`, easeInOut only |
+| 5.3 | UserPlanet component (avatar + ring + name) | ✅ Complete | Status pill uses `color-mix(in srgb, var(--color-x) 10%, transparent)` for all three states (active/blocked/available) instead of the brief's hardcoded rgba values; added optional `onClick` prop per interface spec (unused by the page — no per-user modal in this task's scope) |
+| 5.4 | FilterBar component (Active/Blocked/Available) | ✅ Complete | Shared `layoutId="filterActive"` pill indicator uses `transition={{ duration: 0.3, ease: "easeInOut" }}` matching `Sidebar.tsx`'s `activeNav` precedent, not the brief's spring transition |
+| 5.5 | API: GET /api/users with task counts | ✅ Complete | Verified `capacityLimit`/`status` field names against `schema.ts`'s `users` table before use — matched exactly, implemented as the brief's example (left join + `count()` + groupBy) |
+| 5.6 | Wire data + filter logic | ✅ Complete | Client-side filter over fetched users by `status`; entrance/exit stagger transition fixed to `ease: "easeInOut"` (brief had `"easeOut"`) |
 
 ## Phase 6: Polish & Integration
 | # | Task | Status | Notes |
@@ -124,3 +124,4 @@
 | 2026-07-02 | Task 2 | Overview Nebula complete — page layout, TaskCard, DecisionOrb, DecisionDock, /api/tasks, /api/stats, wired to Nebula page | Claude Sonnet 5 |
 | 2026-07-02 | Task 3 | Task Node Detail modal complete — TaskNodeDetail, Timeline, /api/tasks/[id], wired from TaskCard/DecisionOrb clicks | Claude Sonnet 5 |
 | 2026-07-03 | Task 4 | Decision Nexus complete — OrbList, ContextGlass, /decisions page (30/70 split), widened /api/decisions to full requester+task-status shape, /api/decisions/[id] PATCH, reconciled DecisionOrb/DecisionOrbSummary types | Claude Sonnet 5 |
+| 2026-07-03 | Task 5 | Team Orbit complete — UserPlanet, LoadRing, FilterBar, /team page (staggered grid), /api/users with task counts; fixed brief's hardcoded rgba colors (LoadRing bg ring, UserPlanet status pill x3) and spring transition (FilterBar) to token-based/easeInOut per project constraints | Claude Sonnet 5 |
