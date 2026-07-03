@@ -11,9 +11,9 @@
 | Metric           | Value                    |
 |------------------|--------------------------|
 | **Overall**      | 🟡 In Progress           |
-| **Current Phase**| Phase 4 — Decision Nexus |
-| **Current Task** | Task 4                   |
-| **Last Updated** | 2026-07-02T11:56:00Z     |
+| **Current Phase**| Phase 5 — Team Orbit     |
+| **Current Task** | Task 5                   |
+| **Last Updated** | 2026-07-03T01:41:00Z     |
 | **Spec**         | `docs/superpowers/specs/2026-07-02-orbit-system-design.md` |
 | **Plan**         | `docs/superpowers/plans/2026-07-02-orbit-system-plan.md` |
 
@@ -73,12 +73,12 @@
 ## Phase 4: Decision Nexus
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 4.1 | Decision Nexus page layout (30/70 split) | ⬜ Not Started | |
-| 4.2 | OrbList component (left pane) | ⬜ Not Started | |
-| 4.3 | ContextGlass component (right pane + Grant/Deny actions) | ⬜ Not Started | |
-| 4.4 | API: GET /api/decisions (pending orbs) | ⬜ Not Started | |
-| 4.5 | API: PATCH /api/decisions/[id] (grant/deny) | ⬜ Not Started | |
-| 4.6 | Optimistic UI: orb flash + dissolve on grant | ⬜ Not Started | |
+| 4.1 | Decision Nexus page layout (30/70 split) | ✅ Complete | |
+| 4.2 | OrbList component (left pane) | ✅ Complete | |
+| 4.3 | ContextGlass component (right pane + Grant/Deny actions) | ✅ Complete | |
+| 4.4 | API: GET /api/decisions (pending orbs) | ✅ Complete | Route pre-existed (Task 2) with a narrower shape (partial `task: {id,title}`, no requester); widened it to the full join (requester + task status/urgency) that OrbList/ContextGlass need, and reconciled `DecisionOrb`/`DecisionOrbSummary` types into one honest shape instead of two divergent ones |
+| 4.5 | API: PATCH /api/decisions/[id] (grant/deny) | ✅ Complete | Next.js 16 async `params` (`Promise<{ id: string }>`), same pattern as `/api/tasks/[id]` |
+| 4.6 | Optimistic UI: orb flash + dissolve on grant | ✅ Complete | `OrbList` wraps orbs in `AnimatePresence` with a scale/fade `exit` (dissolve) when removed from the pending list; scoped honestly — this is *not* optimistic (state updates after the `PATCH` promise resolves, same as the brief's own example), and there's no distinct amber "flash" pulse before dissolve, just the exit transition |
 
 ## Phase 5: Team Orbit
 | # | Task | Status | Notes |
@@ -123,3 +123,4 @@
 | 2026-07-02 | Task 1 | Layout shell complete — Sidebar, GlassPanel, StatusPulse, SystemVitals | Antigravity |
 | 2026-07-02 | Task 2 | Overview Nebula complete — page layout, TaskCard, DecisionOrb, DecisionDock, /api/tasks, /api/stats, wired to Nebula page | Claude Sonnet 5 |
 | 2026-07-02 | Task 3 | Task Node Detail modal complete — TaskNodeDetail, Timeline, /api/tasks/[id], wired from TaskCard/DecisionOrb clicks | Claude Sonnet 5 |
+| 2026-07-03 | Task 4 | Decision Nexus complete — OrbList, ContextGlass, /decisions page (30/70 split), widened /api/decisions to full requester+task-status shape, /api/decisions/[id] PATCH, reconciled DecisionOrb/DecisionOrbSummary types | Claude Sonnet 5 |

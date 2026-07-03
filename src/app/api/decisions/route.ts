@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { decisionOrbs, tasks } from "@/db/schema";
+import { decisionOrbs, tasks, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
@@ -15,9 +15,14 @@ export async function GET() {
         createdAt: decisionOrbs.createdAt,
         resolvedAt: decisionOrbs.resolvedAt,
         taskTitle: tasks.title,
+        taskStatus: tasks.status,
+        taskUrgency: tasks.urgencyLevel,
+        requesterName: users.name,
+        requesterAvatar: users.avatarUrl,
       })
       .from(decisionOrbs)
-      .leftJoin(tasks, eq(decisionOrbs.taskId, tasks.id));
+      .leftJoin(tasks, eq(decisionOrbs.taskId, tasks.id))
+      .leftJoin(users, eq(decisionOrbs.requestedBy, users.id));
 
     const formatted = allDecisions.map((d) => ({
       id: d.id,
@@ -27,7 +32,12 @@ export async function GET() {
       status: d.status,
       createdAt: d.createdAt,
       resolvedAt: d.resolvedAt,
-      task: d.taskTitle ? { id: d.taskId, title: d.taskTitle } : undefined,
+      task: d.taskTitle
+        ? { id: d.taskId, title: d.taskTitle, status: d.taskStatus, urgencyLevel: d.taskUrgency }
+        : undefined,
+      requester: d.requesterName
+        ? { id: d.requestedBy, name: d.requesterName, avatarUrl: d.requesterAvatar }
+        : undefined,
     }));
 
     return NextResponse.json({ data: formatted });
