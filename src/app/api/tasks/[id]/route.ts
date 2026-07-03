@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { tasks, users, taskTimeline, decisionOrbs } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+import type { UpdateTaskInput } from "@/lib/types";
 
 export async function GET(
   request: NextRequest,
@@ -69,5 +70,83 @@ export async function GET(
     });
   } catch {
     return NextResponse.json({ error: "Failed to fetch task" }, { status: 500 });
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body: UpdateTaskInput = await request.json();
+
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
+    const timelineEvents: string[] = [];
+
+    if (body.title !== undefined) {
+      updateData.title = body.title;
+      timelineEvents.push("Title updated");
+    }
+    if (body.description !== undefined) {
+      updateData.description = body.description;
+      timelineEvents.push("Description updated");
+    }
+    if (body.status !== undefined) {
+      updateData.status = body.status;
+      timelineEvents.push(`Status changed to ${body.status}`);
+    }
+    if (body.urgencyLevel !== undefined) {
+      updateData.urgencyLevel = body.urgencyLevel;
+      timelineEvents.push(`Urgency changed to ${body.urgencyLevel}`);
+    }
+    if (body.assignedUserId !== undefined) {
+      updateData.assignedUserId = body.assignedUserId;
+      timelineEvents.push(body.assignedUserId ? "Reassigned to team member" : "Unassigned");
+    }
+
+    const [updated] = await db
+      .update(tasks)
+      .set(updateData)
+      .where(eq(tasks.id, id))
+      .returning();
+
+    if (!updated) {
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    for (const event of timelineEvents) {
+      await db.insert(taskTimeline).values({
+        taskId: id,
+        event,
+        actorId: body.assignedUserId || null,
+      });
+    }
+
+    return NextResponse.json({ data: updated });
+  } catch {
+    return NextResponse.json({ error: "Failed to update task" }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    await db.delete(taskTimeline).where(eq(taskTimeline.taskId, id));
+    await db.delete(decisionOrbs).where(eq(decisionOrbs.taskId, id));
+
+    const [deleted] = await db.delete(tasks).where(eq(tasks.id, id)).returning();
+
+    if (!deleted) {
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ data: { success: true } });
+  } catch {
+    return NextResponse.json({ error: "Failed to delete task" }, { status: 500 });
   }
 }

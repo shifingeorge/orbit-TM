@@ -1,7 +1,8 @@
 import { db } from "@/db";
-import { tasks, users } from "@/db/schema";
+import { tasks, users, taskTimeline } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import type { CreateTaskInput } from "@/lib/types";
 
 export async function GET() {
   try {
@@ -39,5 +40,36 @@ export async function GET() {
     return NextResponse.json({ data: formatted });
   } catch {
     return NextResponse.json({ error: "Failed to fetch tasks" }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body: CreateTaskInput = await request.json();
+    const { title, description, urgencyLevel, assignedUserId } = body;
+
+    if (!title || typeof title !== "string" || title.trim().length === 0) {
+      return NextResponse.json({ error: "Title is required" }, { status: 400 });
+    }
+
+    const [created] = await db
+      .insert(tasks)
+      .values({
+        title: title.trim(),
+        description: description?.trim() || null,
+        urgencyLevel: urgencyLevel || "medium",
+        assignedUserId: assignedUserId || null,
+      })
+      .returning();
+
+    await db.insert(taskTimeline).values({
+      taskId: created.id,
+      event: "Task created",
+      actorId: assignedUserId || null,
+    });
+
+    return NextResponse.json({ data: created }, { status: 201 });
+  } catch {
+    return NextResponse.json({ error: "Failed to create task" }, { status: 500 });
   }
 }

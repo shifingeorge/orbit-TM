@@ -6,6 +6,7 @@ import { SystemVitals } from "@/components/layout/SystemVitals";
 import { TaskCard } from "@/components/nebula/TaskCard";
 import { DecisionDock } from "@/components/nebula/DecisionDock";
 import { TaskNodeDetail } from "@/components/shared/TaskNodeDetail";
+import { CreateTaskModal } from "@/components/nebula/CreateTaskModal";
 import type { Task, DecisionOrbSummary, SystemStat } from "@/lib/types";
 
 export default function OverviewNebula() {
@@ -13,11 +14,34 @@ export default function OverviewNebula() {
   const [decisions, setDecisions] = useState<DecisionOrbSummary[]>([]);
   const [stats, setStats] = useState<SystemStat[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  async function fetchData() {
+    try {
+      const [tasksRes, statsRes, decisionsRes] = await Promise.all([
+        fetch("/api/tasks"),
+        fetch("/api/stats"),
+        fetch("/api/decisions"),
+      ]);
+      const tasksData = await tasksRes.json();
+      const statsData = await statsRes.json();
+      const decisionsData = await decisionsRes.json();
+
+      setTasks(tasksData.data || []);
+      setStats(statsData.data || []);
+      setDecisions(decisionsData.data || []);
+    } catch (err) {
+      console.error("Failed to fetch data:", err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    async function fetchData() {
+    async function load() {
       try {
         const [tasksRes, statsRes, decisionsRes] = await Promise.all([
           fetch("/api/tasks"),
@@ -38,7 +62,7 @@ export default function OverviewNebula() {
         setLoading(false);
       }
     }
-    fetchData();
+    load();
   }, []);
 
   const handleTaskClick = (task: Task) => {
@@ -138,12 +162,41 @@ export default function OverviewNebula() {
         </div>
       </div>
 
+      {/* Launch Task button */}
+      <motion.button
+        onClick={() => setCreating(true)}
+        className="fixed bottom-8 right-8 z-40 w-14 h-14 rounded-full bg-primary text-background text-2xl font-display flex items-center justify-center cursor-pointer"
+        whileHover={{ scale: 1.05, boxShadow: "0 0 40px color-mix(in srgb, var(--color-primary) 40%, transparent)" }}
+        whileTap={{ scale: 0.95 }}
+        transition={{ ease: "easeInOut" }}
+      >
+        +
+      </motion.button>
+
+      {/* Create Task Modal */}
+      <AnimatePresence>
+        {creating && (
+          <CreateTaskModal
+            onClose={() => setCreating(false)}
+            onCreated={() => {
+              setCreating(false);
+              fetchData();
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Task Node Detail Modal */}
       <AnimatePresence>
         {selectedTask && (
           <TaskNodeDetail
             task={selectedTask}
             onClose={() => setSelectedTask(null)}
+            onUpdate={fetchData}
+            onDelete={() => {
+              setSelectedTask(null);
+              fetchData();
+            }}
             onGrant={(orbId) => {
               const orb = decisions.find((d) => d.id === orbId);
               setDecisions((prev) => prev.filter((d) => d.id !== orbId));

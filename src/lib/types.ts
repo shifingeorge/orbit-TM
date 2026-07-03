@@ -67,3 +67,18 @@ export interface SystemStat {
   value: string;
   trend?: "up" | "down" | "stable";
 }
+
+export interface CreateTaskInput {
+  title: string;
+  description?: string;
+  urgencyLevel?: UrgencyLevel;
+  assignedUserId?: string;
+}
+
+export interface UpdateTaskInput {
+  title?: string;
+  description?: string;
+  status?: TaskStatus;
+  urgencyLevel?: UrgencyLevel;
+  assignedUserId?: string | null;
+}

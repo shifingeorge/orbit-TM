@@ -1,23 +1,10 @@
 import { db } from "@/db";
-import { users, tasks } from "@/db/schema";
-import { eq, count } from "drizzle-orm";
+import { users } from "@/db/schema";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const allUsers = await db
-      .select({
-        id: users.id,
-        name: users.name,
-        avatarUrl: users.avatarUrl,
-        status: users.status,
-        capacityLimit: users.capacityLimit,
-        createdAt: users.createdAt,
-        taskCount: count(tasks.id),
-      })
-      .from(users)
-      .leftJoin(tasks, eq(users.id, tasks.assignedUserId))
-      .groupBy(users.id);
+    const allUsers = await db.select().from(users);
 
     return NextResponse.json({ data: allUsers });
   } catch {
