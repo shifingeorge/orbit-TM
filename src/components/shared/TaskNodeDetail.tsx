@@ -132,7 +132,7 @@ export function TaskNodeDetail({ task, onClose, onGrant, onDeny }: TaskNodeDetai
                     <span
                       className="inline-flex px-3 py-0.5 rounded-pill text-xs font-body mt-2"
                       style={{
-                        backgroundColor: `${urgencyColor}15`,
+                        backgroundColor: `color-mix(in srgb, ${urgencyColor} 15%, transparent)`,
                         color: urgencyColor,
                       }}
                     >
@@ -178,7 +178,7 @@ export function TaskNodeDetail({ task, onClose, onGrant, onDeny }: TaskNodeDetai
                         <div className="flex gap-3">
                           <motion.button
                             className="px-8 py-3 rounded-pill bg-primary text-background font-display font-medium text-sm min-w-[120px]"
-                            whileHover={{ scale: 1.02, boxShadow: "0 0 30px rgba(0,229,255,0.3)" }}
+                            whileHover={{ scale: 1.02, boxShadow: "0 0 30px color-mix(in srgb, var(--color-primary) 30%, transparent)" }}
                             whileTap={{ scale: 0.98 }}
                             transition={{ ease: "easeInOut" }}
                             onClick={() => handleGrant(orb.id)}
@@ -188,7 +188,7 @@ export function TaskNodeDetail({ task, onClose, onGrant, onDeny }: TaskNodeDetai
                           </motion.button>
                           <motion.button
                             className="px-8 py-3 rounded-pill border border-urgent/30 text-urgent font-display font-medium text-sm min-w-[120px]"
-                            whileHover={{ scale: 1.02, backgroundColor: "rgba(255,51,102,0.1)" }}
+                            whileHover={{ scale: 1.02, backgroundColor: "color-mix(in srgb, var(--color-urgent) 10%, transparent)" }}
                             whileTap={{ scale: 0.98 }}
                             transition={{ ease: "easeInOut" }}
                             onClick={() => handleDeny(orb.id)}
