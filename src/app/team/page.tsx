@@ -12,6 +12,7 @@ export default function TeamOrbit() {
   const [users, setUsers] = useState<(User & { taskCount: number })[]>([]);
   const [filter, setFilter] = useState<FilterOption>("all");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     async function fetchUsers() {
@@ -21,6 +22,7 @@ export default function TeamOrbit() {
         setUsers(data.data || []);
       } catch (err) {
         console.error("Failed to fetch users:", err);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -34,14 +36,35 @@ export default function TeamOrbit() {
 
   if (loading) {
     return (
+      <div className="min-h-screen p-6">
+        <div className="skeleton h-9 w-56 mb-8" />
+        <div className="flex justify-center mb-12">
+          <div className="skeleton h-12 w-72 !rounded-pill" />
+        </div>
+        <div className="flex flex-wrap justify-center gap-12">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="skeleton w-20 h-20 !rounded-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
       <div className="min-h-screen flex items-center justify-center">
-        <motion.p
-          className="font-display text-2xl text-primary/60"
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        <motion.div
+          className="text-center"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
-          Mapping orbits...
-        </motion.p>
+          <p className="font-display text-2xl text-urgent mb-2">
+            Failed to load
+          </p>
+          <p className="font-body text-sm text-muted">
+            Check your connection and try again.
+          </p>
+        </motion.div>
       </div>
     );
   }

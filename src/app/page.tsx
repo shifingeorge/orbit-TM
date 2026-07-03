@@ -14,6 +14,7 @@ export default function OverviewNebula() {
   const [stats, setStats] = useState<SystemStat[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -32,6 +33,7 @@ export default function OverviewNebula() {
         setDecisions(decisionsData.data || []);
       } catch (err) {
         console.error("Failed to fetch data:", err);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -51,14 +53,36 @@ export default function OverviewNebula() {
 
   if (loading) {
     return (
+      <div className="min-h-screen p-6">
+        <div className="flex gap-3 mb-8">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="skeleton h-14 w-40 !rounded-pill" />
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-5 justify-center">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="skeleton w-[280px] h-[200px]" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
       <div className="min-h-screen flex items-center justify-center">
-        <motion.p
-          className="font-display text-2xl text-primary/60"
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        <motion.div
+          className="text-center"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
-          Initializing orbit...
-        </motion.p>
+          <p className="font-display text-2xl text-urgent mb-2">
+            Failed to load
+          </p>
+          <p className="font-body text-sm text-muted">
+            Check your connection and try again.
+          </p>
+        </motion.div>
       </div>
     );
   }

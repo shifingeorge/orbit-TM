@@ -98,6 +98,19 @@ body {
   box-shadow: 0 0 40px rgba(255, 51, 102, 0.15);
 }
 
+/* Skeleton shimmer */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-text) 3%, transparent) 25%,
+    color-mix(in srgb, var(--color-text) 6%, transparent) 50%,
+    color-mix(in srgb, var(--color-text) 3%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+  border-radius: var(--radius-panel);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

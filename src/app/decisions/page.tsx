@@ -10,6 +10,7 @@ export default function DecisionNexus() {
   const [orbs, setOrbs] = useState<DecisionOrb[]>([]);
   const [selectedOrb, setSelectedOrb] = useState<DecisionOrb | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     async function fetchDecisions() {
@@ -23,6 +24,7 @@ export default function DecisionNexus() {
         setSelectedOrb((prev) => prev ?? (pendingOrbs.length > 0 ? pendingOrbs[0] : null));
       } catch (err) {
         console.error("Failed to fetch decisions:", err);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -40,14 +42,37 @@ export default function DecisionNexus() {
 
   if (loading) {
     return (
+      <div className="min-h-screen p-6">
+        <div className="skeleton h-9 w-64 mb-8" />
+        <div className="flex gap-6 h-[calc(100vh-140px)]">
+          <div className="w-[30%] flex flex-col gap-3 pr-2">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="skeleton h-20 w-full" />
+            ))}
+          </div>
+          <div className="w-[70%]">
+            <div className="skeleton h-full w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
       <div className="min-h-screen flex items-center justify-center">
-        <motion.p
-          className="font-display text-2xl text-decision/60"
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        <motion.div
+          className="text-center"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
-          Loading decision nexus...
-        </motion.p>
+          <p className="font-display text-2xl text-urgent mb-2">
+            Failed to load
+          </p>
+          <p className="font-body text-sm text-muted">
+            Check your connection and try again.
+          </p>
+        </motion.div>
       </div>
     );
   }
