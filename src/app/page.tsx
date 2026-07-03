@@ -145,7 +145,15 @@ export default function OverviewNebula() {
             task={selectedTask}
             onClose={() => setSelectedTask(null)}
             onGrant={(orbId) => {
+              const orb = decisions.find((d) => d.id === orbId);
               setDecisions((prev) => prev.filter((d) => d.id !== orbId));
+              if (orb) {
+                setTasks((prev) =>
+                  prev.map((t) =>
+                    t.id === orb.taskId ? { ...t, status: "active" } : t
+                  )
+                );
+              }
             }}
             onDeny={(orbId) => {
               setDecisions((prev) => prev.filter((d) => d.id !== orbId));
