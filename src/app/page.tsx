@@ -153,6 +153,21 @@ export default function OverviewNebula() {
                     t.id === orb.taskId ? { ...t, status: "active" } : t
                   )
                 );
+                const wasBlocked = orb.task?.status === "blocked";
+                setStats((prev) =>
+                  prev.map((s) => {
+                    if (s.label === "Pending Decisions") {
+                      return { ...s, value: String(Math.max(0, Number(s.value) - 1)) };
+                    }
+                    if (s.label === "Active Nodes") {
+                      return { ...s, value: String(Number(s.value) + 1) };
+                    }
+                    if (s.label === "Blocked" && wasBlocked) {
+                      return { ...s, value: String(Math.max(0, Number(s.value) - 1)) };
+                    }
+                    return s;
+                  })
+                );
               }
             }}
             onDeny={(orbId) => {
