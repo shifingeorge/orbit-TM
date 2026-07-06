@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import { Sidebar } from "@/components/layout/Sidebar";
 import "./globals.css";
 
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+
 export const metadata: Metadata = {
-  title: "Orbit System",
-  description: "Sensory operational dashboard — a living, breathing ecosystem",
+  title: "Orbit",
+  description: "Minimal task manager",
 };
 
 export default function RootLayout({
@@ -13,12 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={inter.variable}>
       <body className="antialiased">
         <Sidebar />
-        <main className="ml-[72px] min-h-screen relative">
-          {children}
-        </main>
+        <main className="ml-[200px] min-h-screen">{children}</main>
       </body>
     </html>
   );

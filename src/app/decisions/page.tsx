@@ -1,125 +1,102 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { OrbList } from "@/components/decisions/OrbList";
-import { ContextGlass } from "@/components/decisions/ContextGlass";
+import { useState } from "react";
+import { useApi } from "@/lib/useApi";
 import type { DecisionOrb } from "@/lib/types";
 
-export default function DecisionNexus() {
-  const [orbs, setOrbs] = useState<DecisionOrb[]>([]);
-  const [selectedOrb, setSelectedOrb] = useState<DecisionOrb | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+export default function DecisionsPage() {
+  const decisions = useApi<DecisionOrb[]>("/api/decisions");
+  const [actingId, setActingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchDecisions() {
-      try {
-        const res = await fetch("/api/decisions");
-        const data = await res.json();
-        const pendingOrbs = (data.data || []).filter(
-          (o: DecisionOrb) => o.status === "pending"
-        );
-        setOrbs(pendingOrbs);
-        setSelectedOrb((prev) => prev ?? (pendingOrbs.length > 0 ? pendingOrbs[0] : null));
-      } catch (err) {
-        console.error("Failed to fetch decisions:", err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
+  const resolve = async (id: string, status: "granted" | "denied") => {
+    setActingId(id);
+    try {
+      const res = await fetch(`/api/decisions/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await decisions.refetch();
+    } catch (err) {
+      console.error("Failed to resolve decision:", err);
+    } finally {
+      setActingId(null);
     }
-    fetchDecisions();
-  }, []);
-
-  const handleResolved = (orbId: string) => {
-    setOrbs((prev) => {
-      const remaining = prev.filter((o) => o.id !== orbId);
-      setSelectedOrb(remaining.length > 0 ? remaining[0] : null);
-      return remaining;
-    });
   };
 
-  if (loading) {
+  if (decisions.loading) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="skeleton h-9 w-64 mb-8" />
-        <div className="flex gap-6 h-[calc(100vh-140px)]">
-          <div className="w-[30%] flex flex-col gap-3 pr-2">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="skeleton h-20 w-full" />
-            ))}
-          </div>
-          <div className="w-[70%]">
-            <div className="skeleton h-full w-full" />
-          </div>
-        </div>
+      <div className="max-w-3xl mx-auto px-6 py-8">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="skeleton h-20 w-full mb-3" />
+        ))}
       </div>
     );
   }
 
-  if (error) {
+  if (decisions.error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <motion.div
-          className="text-center"
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      <div className="max-w-3xl mx-auto px-6 py-16 text-center">
+        <p className="text-[15px] font-medium mb-1">Failed to load</p>
+        <p className="text-[13px] text-muted mb-4">
+          Check your connection and try again.
+        </p>
+        <button
+          onClick={decisions.refetch}
+          className="px-3 py-1.5 rounded-md border border-border text-xs hover:bg-surface transition-colors cursor-pointer"
         >
-          <p className="font-display text-2xl text-urgent mb-2">
-            Failed to load
-          </p>
-          <p className="font-body text-sm text-muted">
-            Check your connection and try again.
-          </p>
-        </motion.div>
+          Retry
+        </button>
       </div>
     );
   }
+
+  const pending = (decisions.data || []).filter((d) => d.status === "pending");
 
   return (
-    <div className="min-h-screen p-6">
-      {/* Ambient background */}
-      <div className="fixed inset-0 pointer-events-none ml-[72px]">
-        <div className="absolute top-1/4 right-1/3 w-[500px] h-[500px] bg-decision/[0.03] rounded-full blur-[120px]" />
-      </div>
+    <div className="max-w-3xl mx-auto px-6 py-8">
+      <h1 className="text-[15px] font-semibold py-4">
+        Decisions <span className="text-muted font-normal">{pending.length}</span>
+      </h1>
 
-      <div className="relative z-10">
-        <h1 className="font-display text-3xl text-text mb-8">Decision Nexus</h1>
-
-        {orbs.length === 0 ? (
-          <div className="flex items-center justify-center h-[60vh]">
-            <motion.div
-              className="text-center"
-              animate={{ opacity: [0.3, 0.7, 0.3] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <span className="text-primary/20 text-9xl block mb-4">✓</span>
-              <p className="font-display text-xl text-muted">All decisions cleared</p>
-            </motion.div>
-          </div>
-        ) : (
-          <div className="flex gap-6 h-[calc(100vh-140px)]">
-            {/* Left pane — 30% */}
-            <div className="w-[30%] overflow-y-auto pr-2">
-              <OrbList
-                orbs={orbs}
-                selectedId={selectedOrb?.id || null}
-                onSelect={setSelectedOrb}
-              />
+      {pending.length === 0 ? (
+        <p className="text-[13px] text-muted py-16 text-center">
+          No pending decisions.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {pending.map((orb) => (
+            <div key={orb.id} className="border border-border rounded-md p-4">
+              <div className="flex items-start justify-between gap-3 mb-1">
+                <p className="text-[13px] font-medium">
+                  {orb.task?.title || "Untitled task"}
+                </p>
+                <span className="text-xs text-muted shrink-0">
+                  {orb.requester?.name || "Unknown"}
+                </span>
+              </div>
+              <p className="text-[13px] text-muted mb-3">{orb.contextReason}</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => resolve(orb.id, "granted")}
+                  disabled={actingId === orb.id}
+                  className="px-3 py-1 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {actingId === orb.id ? "..." : "Grant"}
+                </button>
+                <button
+                  onClick={() => resolve(orb.id, "denied")}
+                  disabled={actingId === orb.id}
+                  className="px-3 py-1 rounded-md border border-border text-xs text-danger hover:bg-surface transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  Deny
+                </button>
+              </div>
             </div>
-
-            {/* Right pane — 70% */}
-            <div className="w-[70%]">
-              <ContextGlass
-                orb={selectedOrb}
-                onGrant={handleResolved}
-                onDeny={handleResolved}
-              />
-            </div>
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

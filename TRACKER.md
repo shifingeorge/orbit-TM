@@ -10,12 +10,14 @@
 
 | Metric           | Value                    |
 |------------------|--------------------------|
-| **Overall**      | 🟢 Complete              |
+| **Overall**      | 🟢 Complete (minimal UI rebuild shipped 2026-07-06) |
 | **Current Phase**| Done                     |
 | **Current Task** | None — all tasks complete |
-| **Last Updated** | 2026-07-03T08:10:00Z     |
-| **Spec**         | `docs/superpowers/specs/2026-07-02-orbit-system-design.md` |
+| **Last Updated** | 2026-07-06T17:25:00Z     |
+| **Spec**         | `docs/superpowers/specs/2026-07-06-minimal-ui-rebuild-design.md` (supersedes UI portions of `2026-07-02-orbit-system-design.md`) |
 | **Plan**         | `docs/superpowers/plans/2026-07-02-orbit-system-plan.md` |
+
+> **NOTE (2026-07-06):** Phases 1–6 below describe the original glassmorphic space-theme UI, which has been **replaced wholesale** by the minimal light-theme UI (see "Phase 7: Minimal UI Rebuild"). The API routes, DB schema, and route structure from those phases are unchanged; only the component layer and pages were rewritten.
 
 ---
 
@@ -102,6 +104,23 @@
 
 ---
 
+## Phase 7: Minimal UI Rebuild (2026-07-06)
+
+Full replacement of the space-theme UI with a clean, minimal, light-theme design per `docs/superpowers/specs/2026-07-06-minimal-ui-rebuild-design.md`. User-approved direction: full rebuild, light theme, Linear-style list rows.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 7.1 | Design system | ✅ Complete | `globals.css` rewritten — Tailwind 4 `@theme` tokens (white bg, zinc text/borders, blue accent, status colors), Inter via `next/font/google`, 8px radius, no glass/glow/gradients |
+| 7.2 | Layout shell | ✅ Complete | `layout.tsx` + `Sidebar.tsx` rewritten — 200px text sidebar (Tasks/Decisions/Team), framer-motion removed and uninstalled |
+| 7.3 | Shared logic | ✅ Complete | New `useApi<T>` hook (loading/error/refetch) replaces per-page fetch duplication; refetch-after-mutation replaces brittle local state patching (fixes the SystemVitals stale-stats class of bugs by design) |
+| 7.4 | Tasks page | ✅ Complete | `page.tsx` 235→~100 lines: StatBar, TaskRow list, NewTaskDialog, TaskDetail. Old nebula/ components deleted |
+| 7.5 | Decisions page | ✅ Complete | Flat card list with Grant/Deny, replaces OrbList/ContextGlass split layout |
+| 7.6 | Team page | ✅ Complete | Table with status dot, task count, capacity, filter tabs. Replaces UserPlanet/LoadRing grid |
+| 7.7 | API fixes | ✅ Complete | `/api/users` now returns real `taskCount` (LEFT JOIN, non-completed tasks, ordered by name) — old UI counted client-side, new UI exposed the gap. `/api/stats` labels de-themed ("Active Nodes"→"Active" etc.) |
+| 7.8 | Verification | ✅ Complete | Live-tested 2026-07-06 via headless browser against real Neon DB: create task → appears in list (count 9→10), open detail, Start (pending→active + timeline event), delete (confirm flow, count back to 9), grant decision on /decisions (empty state appears), team filters, Escape-closes-dialog. Lint 0 problems, prod build passes, no console errors on any route. **Env note:** WSL2 Node fetch to Neon fails on IPv6 — dev server needs `NODE_OPTIONS=--dns-result-order=ipv4first` |
+
+---
+
 ## Status Legend
 
 | Icon | Meaning |
@@ -128,3 +147,4 @@
 | 2026-07-03 | Task 6 | Polish & Integration complete — `.skeleton` shimmer class (token-based, fixed brief's hardcoded rgba), loading skeletons on all 3 pages, urgent-tinted error states added (previously missing — fetch failures only logged to console), full easeInOut/timing audit across `src/` (no violations found), end-to-end Grant flow verified by code-inspection walkthrough only (DB still unconnected — placeholder `DATABASE_URL`). Overall status → 🟢 Complete | Claude Sonnet 5 |
 | 2026-07-03 | Task 6 fix | Fixed stale `tasks` state on Nebula post-grant (SHA a7d86ec) — `onGrant` now patches task status to `active` locally via functional `setTasks` update. Re-reviewed and approved | Claude Sonnet 5 |
 | 2026-07-03 | — | Real Neon `DATABASE_URL` provided by user. Schema pushed (`drizzle-kit push`), DB seeded, full app live-tested end-to-end via headless browser (Grant flow, Decision Nexus, Team Orbit). Fixed newly-found stale stats-bar bug (SHA 5a0d174). Confirmed live: `users.status`/`tasks.status` derivation gap is real, not just theoretical | Claude Sonnet 5 |
+| 2026-07-06 | Phase 7 | Full minimal UI rebuild — light theme design system, useApi hook, all 3 pages + dialogs rewritten, 15 old components deleted, framer-motion removed, `/api/users` taskCount fixed, live-verified end-to-end (create/edit/status/delete/grant) via headless browser | Claude Fable 5 |

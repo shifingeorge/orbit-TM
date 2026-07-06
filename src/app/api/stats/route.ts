@@ -29,15 +29,15 @@ export async function GET() {
     return NextResponse.json({
       data: [
         { label: "Efficiency", value: `${efficiency}%`, trend: "stable" as const },
-        { label: "Active Nodes", value: String(taskStats.active), trend: "up" as const },
+        { label: "Active", value: String(taskStats.active), trend: "up" as const },
         {
           label: "Blocked",
           value: String(taskStats.blocked),
           trend: taskStats.blocked > 0 ? ("down" as const) : ("stable" as const),
         },
-        { label: "Team Online", value: String(userStats.total), trend: "stable" as const },
+        { label: "Team", value: String(userStats.total), trend: "stable" as const },
         {
-          label: "Pending Decisions",
+          label: "Pending decisions",
           value: String(decisionStats.pending),
           trend: decisionStats.pending > 0 ? ("down" as const) : ("stable" as const),
         },

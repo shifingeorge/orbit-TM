@@ -1,16 +1,5 @@
-import { UrgencyLevel } from "./types";
-
 export function cn(...classes: (string | undefined | false | null)[]): string {
   return classes.filter(Boolean).join(" ");
-}
-
-export function urgencyToColor(urgency: UrgencyLevel): string {
-  switch (urgency) {
-    case "critical": return "var(--color-urgent)";
-    case "high": return "var(--color-decision)";
-    case "medium": return "var(--color-primary)";
-    case "low": return "var(--color-muted)";
-  }
 }
 
 export function formatRelativeTime(dateString: string): string {
@@ -25,4 +14,14 @@ export function formatRelativeTime(dateString: string): string {
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   return `${diffDays}d ago`;
+}
+
+export function initials(name: string): string {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 }

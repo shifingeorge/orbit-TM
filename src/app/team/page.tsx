@@ -1,126 +1,123 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { UserPlanet } from "@/components/team/UserPlanet";
-import { FilterBar } from "@/components/team/FilterBar";
+import { useState } from "react";
+import { useApi } from "@/lib/useApi";
+import { cn, initials } from "@/lib/utils";
 import type { User, UserStatus } from "@/lib/types";
 
 type FilterOption = UserStatus | "all";
 
-export default function TeamOrbit() {
-  const [users, setUsers] = useState<(User & { taskCount: number })[]>([]);
+const filters: { value: FilterOption; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "active", label: "Active" },
+  { value: "available", label: "Available" },
+  { value: "blocked", label: "Blocked" },
+];
+
+const statusDot: Record<UserStatus, string> = {
+  active: "bg-success",
+  available: "bg-neutral",
+  blocked: "bg-danger",
+};
+
+export default function TeamPage() {
+  const users = useApi<(User & { taskCount: number })[]>("/api/users");
   const [filter, setFilter] = useState<FilterOption>("all");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const res = await fetch("/api/users");
-        const data = await res.json();
-        setUsers(data.data || []);
-      } catch (err) {
-        console.error("Failed to fetch users:", err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchUsers();
-  }, []);
-
-  const filteredUsers = filter === "all"
-    ? users
-    : users.filter((u) => u.status === filter);
-
-  if (loading) {
+  if (users.loading) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="skeleton h-9 w-56 mb-8" />
-        <div className="flex justify-center mb-12">
-          <div className="skeleton h-12 w-72 !rounded-pill" />
-        </div>
-        <div className="flex flex-wrap justify-center gap-12">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="skeleton w-20 h-20 !rounded-full" />
+      <div className="max-w-3xl mx-auto px-6 py-8">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="skeleton h-10 w-full mb-2" />
+        ))}
+      </div>
+    );
+  }
+
+  if (users.error) {
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-16 text-center">
+        <p className="text-[15px] font-medium mb-1">Failed to load</p>
+        <p className="text-[13px] text-muted mb-4">
+          Check your connection and try again.
+        </p>
+        <button
+          onClick={users.refetch}
+          className="px-3 py-1.5 rounded-md border border-border text-xs hover:bg-surface transition-colors cursor-pointer"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  const filtered =
+    filter === "all"
+      ? users.data || []
+      : (users.data || []).filter((u) => u.status === filter);
+
+  return (
+    <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="flex items-center justify-between py-4">
+        <h1 className="text-[15px] font-semibold">
+          Team <span className="text-muted font-normal">{filtered.length}</span>
+        </h1>
+        <div className="flex gap-1">
+          {filters.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setFilter(f.value)}
+              className={cn(
+                "px-2.5 py-1 rounded-md text-xs transition-colors cursor-pointer",
+                filter === f.value
+                  ? "bg-border/50 text-text font-medium"
+                  : "text-muted hover:text-text"
+              )}
+            >
+              {f.label}
+            </button>
           ))}
         </div>
       </div>
-    );
-  }
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <motion.div
-          className="text-center"
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <p className="font-display text-2xl text-urgent mb-2">
-            Failed to load
-          </p>
-          <p className="font-body text-sm text-muted">
-            Check your connection and try again.
-          </p>
-        </motion.div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen p-6">
-      {/* Ambient background */}
-      <div className="fixed inset-0 pointer-events-none ml-[72px]">
-        <div className="absolute top-1/3 left-1/3 w-[500px] h-[500px] bg-primary/[0.02] rounded-full blur-[100px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-urgent/[0.02] rounded-full blur-[80px]" />
-      </div>
-
-      <div className="relative z-10">
-        <h1 className="font-display text-3xl text-text mb-8">Team Orbit</h1>
-
-        {/* Filter Bar */}
-        <div className="flex justify-center mb-12">
-          <FilterBar active={filter} onChange={setFilter} />
-        </div>
-
-        {/* Users Grid */}
-        {filteredUsers.length === 0 ? (
-          <div className="flex items-center justify-center h-[50vh]">
-            <motion.p
-              className="font-display text-xl text-muted"
-              animate={{ opacity: [0.3, 0.7, 0.3] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            >
-              No active orbits
-            </motion.p>
-          </div>
-        ) : (
-          <div className="flex flex-wrap justify-center gap-12">
-            <AnimatePresence>
-              {filteredUsers.map((user, i) => (
-                <motion.div
-                  key={user.id}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{
-                    opacity: 1,
-                    scale: 1,
-                    y: i % 2 === 0 ? 0 : 20, // Staggered layout
-                  }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{
-                    delay: i * 0.1,
-                    ease: "easeInOut",
-                  }}
-                >
-                  <UserPlanet user={user} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
-      </div>
+      {filtered.length === 0 ? (
+        <p className="text-[13px] text-muted py-16 text-center">No members.</p>
+      ) : (
+        <table className="w-full border-t border-b border-border">
+          <thead>
+            <tr className="text-left text-xs text-muted">
+              <th className="font-normal py-2 px-2">Member</th>
+              <th className="font-normal py-2 px-2">Status</th>
+              <th className="font-normal py-2 px-2 text-right">Tasks</th>
+              <th className="font-normal py-2 px-2 text-right">Capacity</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border border-t border-border">
+            {filtered.map((user) => (
+              <tr key={user.id} className="text-[13px]">
+                <td className="py-2.5 px-2">
+                  <span className="flex items-center gap-2">
+                    <span className="inline-flex w-6 h-6 rounded-full bg-surface border border-border items-center justify-center text-[10px] text-muted">
+                      {initials(user.name)}
+                    </span>
+                    {user.name}
+                  </span>
+                </td>
+                <td className="py-2.5 px-2">
+                  <span className="flex items-center gap-1.5 capitalize">
+                    <span className={cn("w-2 h-2 rounded-full", statusDot[user.status])} />
+                    {user.status}
+                  </span>
+                </td>
+                <td className="py-2.5 px-2 text-right">{user.taskCount}</td>
+                <td className="py-2.5 px-2 text-right text-muted">
+                  {user.capacityLimit}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
