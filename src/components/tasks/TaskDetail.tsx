@@ -55,6 +55,10 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
   const [updateBody, setUpdateBody] = useState("");
   const [postingAs, setPostingAs] = useState<string>("");
 
+  const [editingUpdateId, setEditingUpdateId] = useState<string | null>(null);
+  const [editUpdateBody, setEditUpdateBody] = useState("");
+  const [confirmDeleteUpdateId, setConfirmDeleteUpdateId] = useState<string | null>(null);
+
   const { data: users } = useApi<User[]>("/api/users");
 
   const fetchDetail = useCallback(async () => {
@@ -194,6 +198,37 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
       "post update"
     );
     if (ok) setUpdateBody("");
+  };
+
+  const startEditUpdate = (update: TaskUpdate) => {
+    setEditingUpdateId(update.id);
+    setEditUpdateBody(update.body);
+    setConfirmDeleteUpdateId(null);
+  };
+
+  const cancelEditUpdate = () => {
+    setEditingUpdateId(null);
+    setEditUpdateBody("");
+  };
+
+  const saveEditUpdate = async (updateId: string) => {
+    const body = editUpdateBody.trim();
+    if (!body) return;
+    const ok = await mutate(
+      `/api/updates/${updateId}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body }),
+      },
+      "edit update"
+    );
+    if (ok) cancelEditUpdate();
+  };
+
+  const deleteUpdate = async (updateId: string) => {
+    const ok = await mutate(`/api/updates/${updateId}`, { method: "DELETE" }, "delete update");
+    if (ok) setConfirmDeleteUpdateId(null);
   };
 
   const pendingDecisions =
@@ -492,12 +527,75 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
             {detail.updates?.length ? (
               <ul className="flex flex-col gap-2.5">
                 {detail.updates.map((update) => (
-                  <li key={update.id} className="text-[13px]">
-                    <p className="whitespace-pre-wrap">{update.body}</p>
-                    <p className="text-xs text-muted mt-0.5">
-                      {update.author?.name || "Unknown"} ·{" "}
-                      {formatRelativeTime(update.createdAt)}
-                    </p>
+                  <li key={update.id} className="group text-[13px]">
+                    {editingUpdateId === update.id ? (
+                      <div className="flex flex-col gap-2">
+                        <textarea
+                          value={editUpdateBody}
+                          onChange={(e) => setEditUpdateBody(e.target.value)}
+                          rows={2}
+                          className={`${inputClass} resize-none`}
+                        />
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => saveEditUpdate(update.id)}
+                            disabled={saving || !editUpdateBody.trim()}
+                            className="px-3 py-1 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors disabled:opacity-50 cursor-pointer"
+                          >
+                            {saving ? "Saving..." : "Save"}
+                          </button>
+                          <button
+                            onClick={cancelEditUpdate}
+                            className="text-xs text-muted hover:text-text transition-colors cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="whitespace-pre-wrap">{update.body}</p>
+                        <div className="flex items-center justify-between gap-3 mt-0.5">
+                          <p className="text-xs text-muted">
+                            {update.author?.name || "Unknown"} ·{" "}
+                            {formatRelativeTime(update.createdAt)}
+                          </p>
+                          {confirmDeleteUpdateId === update.id ? (
+                            <span className="flex items-center gap-2 text-xs">
+                              <span className="text-danger">Delete?</span>
+                              <button
+                                onClick={() => deleteUpdate(update.id)}
+                                disabled={saving}
+                                className="px-2 py-0.5 rounded-md bg-danger text-white cursor-pointer"
+                              >
+                                Confirm
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteUpdateId(null)}
+                                className="text-muted cursor-pointer"
+                              >
+                                No
+                              </button>
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={() => startEditUpdate(update)}
+                                className="text-muted hover:text-text transition-colors cursor-pointer"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteUpdateId(update.id)}
+                                className="text-muted hover:text-danger transition-colors cursor-pointer"
+                              >
+                                Delete
+                              </button>
+                            </span>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>
