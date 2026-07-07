@@ -22,5 +22,9 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // Run on page routes only; API routes self-guard with JSON 401/403.
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  // Exclude the PWA manifest + icons so they stay publicly fetchable (the
+  // browser loads them without our session cookie during install).
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|icon-192.png|icon-512.png).*)",
+  ],
 };

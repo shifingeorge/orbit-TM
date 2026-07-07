@@ -69,7 +69,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 h-screen border-r border-border bg-surface flex flex-col py-5 z-50 transition-[width] duration-150 ease-in-out overflow-hidden",
+        "fixed left-0 top-0 h-screen border-r border-border bg-surface hidden md:flex flex-col py-5 z-50 transition-[width] duration-150 ease-in-out overflow-hidden",
         collapsed ? "w-[56px] px-2" : "w-[200px] px-3"
       )}
     >

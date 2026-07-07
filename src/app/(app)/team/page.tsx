@@ -106,7 +106,8 @@ export default function TeamPage() {
       {filtered.length === 0 ? (
         <p className="text-[13px] text-muted py-16 text-center">No members.</p>
       ) : (
-        <table className="w-full border-t border-b border-border">
+        <div className="-mx-6 px-6 overflow-x-auto md:mx-0 md:px-0">
+        <table className="w-full min-w-[420px] border-t border-b border-border">
           <thead>
             <tr className="text-left text-xs text-muted">
               <th className="font-normal py-2 px-2">Member</th>
@@ -140,6 +141,7 @@ export default function TeamPage() {
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );

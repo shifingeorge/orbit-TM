@@ -57,7 +57,7 @@ export function TaskRow({ task, onClick }: TaskRowProps) {
           {task.subtaskDoneCount}/{task.subtaskCount}
         </span>
       )}
-      <span className={cn("w-16 text-xs shrink-0", urgencyStyle[task.urgencyLevel])}>
+      <span className={cn("hidden sm:block w-16 text-xs shrink-0", urgencyStyle[task.urgencyLevel])}>
         {urgencyLabel[task.urgencyLevel]}
       </span>
       <span className="w-8 shrink-0">

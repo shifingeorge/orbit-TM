@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/layout/Sidebar";
+import { MobileNav } from "@/components/layout/MobileNav";
 
 export default function AppLayout({
   children,
@@ -8,6 +9,7 @@ export default function AppLayout({
   return (
     <>
       <Sidebar />
+      <MobileNav />
       <main className="app-main min-h-screen">{children}</main>
     </>
   );

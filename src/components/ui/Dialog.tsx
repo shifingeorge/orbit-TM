@@ -20,13 +20,13 @@ export function Dialog({ onClose, children, className }: DialogProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 p-4"
+      className="fixed inset-0 z-[100] flex items-stretch justify-center bg-black/30 md:items-center md:p-4"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          "w-full max-w-[520px] max-h-[85vh] overflow-y-auto bg-background border border-border rounded-md shadow-sm p-6",
+          "w-full h-full overflow-y-auto bg-background p-6 rounded-none border-0 md:h-auto md:max-w-[520px] md:max-h-[85vh] md:border md:border-border md:rounded-md md:shadow-sm",
           className
         )}
       >
