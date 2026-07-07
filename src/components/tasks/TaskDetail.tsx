@@ -11,6 +11,8 @@ import type {
   DecisionOrb,
   User,
   UrgencyLevel,
+  TaskUpdate,
+  Subtask,
 } from "@/lib/types";
 
 interface TaskDetailProps {
@@ -23,6 +25,8 @@ interface TaskDetailProps {
 interface TaskDetailData extends Task {
   timeline: TimelineEvent[];
   decisionOrbs: DecisionOrb[];
+  updates: TaskUpdate[];
+  subtasks: Subtask[];
 }
 
 const inputClass =
@@ -47,6 +51,10 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
   const [editUrgency, setEditUrgency] = useState<UrgencyLevel>("medium");
   const [editAssignee, setEditAssignee] = useState<string | null>(null);
 
+  const [newSubtask, setNewSubtask] = useState("");
+  const [updateBody, setUpdateBody] = useState("");
+  const [postingAs, setPostingAs] = useState<string>("");
+
   const { data: users } = useApi<User[]>("/api/users");
 
   const fetchDetail = useCallback(async () => {
@@ -60,6 +68,7 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
       setEditDescription(data.description || "");
       setEditUrgency(data.urgencyLevel);
       setEditAssignee(data.assignedUserId);
+      setPostingAs((prev) => prev || data.assignedUserId || "");
     } catch (err) {
       console.error("Failed to fetch task detail:", err);
     } finally {
@@ -123,6 +132,68 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
     } finally {
       setSaving(false);
     }
+  };
+
+  /** Runs a mutation request, then refreshes the dialog and notifies the list. */
+  const mutate = async (input: RequestInfo, init: RequestInit, label: string) => {
+    setSaving(true);
+    try {
+      const res = await fetch(input, init);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await fetchDetail();
+      onChanged();
+      return true;
+    } catch (err) {
+      console.error(`Failed to ${label}:`, err);
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addSubtask = async () => {
+    const title = newSubtask.trim();
+    if (!title) return;
+    const ok = await mutate(
+      `/api/tasks/${taskId}/subtasks`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      },
+      "add subtask"
+    );
+    if (ok) setNewSubtask("");
+  };
+
+  const toggleSubtask = (subtask: Subtask) =>
+    mutate(
+      `/api/subtasks/${subtask.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ done: !subtask.done }),
+      },
+      "toggle subtask"
+    );
+
+  const deleteSubtask = (subtaskId: string) =>
+    mutate(`/api/subtasks/${subtaskId}`, { method: "DELETE" }, "delete subtask");
+
+  const postUpdate = async () => {
+    const body = updateBody.trim();
+    const authorId = postingAs || users?.[0]?.id;
+    if (!body || !authorId) return;
+    const ok = await mutate(
+      `/api/tasks/${taskId}/updates`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body, authorId }),
+      },
+      "post update"
+    );
+    if (ok) setUpdateBody("");
   };
 
   const pendingDecisions =
@@ -297,6 +368,63 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
             </>
           )}
 
+          <div className="mb-5">
+            <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+              Subtasks
+              {detail.subtasks.length > 0 && (
+                <span className="normal-case tracking-normal font-normal">
+                  {" "}
+                  · {detail.subtasks.filter((s) => s.done).length}/{detail.subtasks.length}
+                </span>
+              )}
+            </h3>
+            {detail.subtasks.map((subtask) => (
+              <div key={subtask.id} className="group flex items-center gap-2 py-1">
+                <input
+                  type="checkbox"
+                  checked={subtask.done}
+                  onChange={() => toggleSubtask(subtask)}
+                  disabled={saving}
+                  className="cursor-pointer accent-accent"
+                />
+                <span
+                  className={cn(
+                    "text-[13px] flex-1",
+                    subtask.done && "line-through text-muted"
+                  )}
+                >
+                  {subtask.title}
+                </span>
+                <button
+                  onClick={() => deleteSubtask(subtask.id)}
+                  disabled={saving}
+                  className="text-muted hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity text-xs cursor-pointer"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <div className="flex gap-2 mt-1.5">
+              <input
+                type="text"
+                value={newSubtask}
+                onChange={(e) => setNewSubtask(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") addSubtask();
+                }}
+                placeholder="Add a subtask..."
+                className={inputClass}
+              />
+              <button
+                onClick={addSubtask}
+                disabled={saving || !newSubtask.trim()}
+                className="px-3 py-1 rounded-md border border-border text-xs hover:bg-surface transition-colors disabled:opacity-50 cursor-pointer shrink-0"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
           {pendingDecisions.length > 0 && (
             <div className="mb-5">
               <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
@@ -328,6 +456,55 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
               ))}
             </div>
           )}
+
+          <div className="mb-5">
+            <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+              Updates
+            </h3>
+            <div className="flex flex-col gap-2 mb-3">
+              <textarea
+                value={updateBody}
+                onChange={(e) => setUpdateBody(e.target.value)}
+                placeholder="Post a progress update..."
+                rows={2}
+                className={`${inputClass} resize-none`}
+              />
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted shrink-0">Posting as</span>
+                <select
+                  value={postingAs || users?.[0]?.id || ""}
+                  onChange={(e) => setPostingAs(e.target.value)}
+                  className="text-xs border border-border rounded-md px-2 py-1 focus:outline-none focus:border-accent cursor-pointer"
+                >
+                  {(users || []).map((u) => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={postUpdate}
+                  disabled={saving || !updateBody.trim()}
+                  className="ml-auto px-3 py-1 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  Post
+                </button>
+              </div>
+            </div>
+            {detail.updates?.length ? (
+              <ul className="flex flex-col gap-2.5">
+                {detail.updates.map((update) => (
+                  <li key={update.id} className="text-[13px]">
+                    <p className="whitespace-pre-wrap">{update.body}</p>
+                    <p className="text-xs text-muted mt-0.5">
+                      {update.author?.name || "Unknown"} ·{" "}
+                      {formatRelativeTime(update.createdAt)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-muted">No updates yet.</p>
+            )}
+          </div>
 
           <div>
             <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">

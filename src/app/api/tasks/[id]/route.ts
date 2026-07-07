@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { tasks, users, taskTimeline, decisionOrbs } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { tasks, users, taskTimeline, decisionOrbs, taskUpdates, subtasks } from "@/db/schema";
+import { desc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import type { UpdateTaskInput } from "@/lib/types";
 
@@ -55,6 +55,27 @@ export async function GET(
       .from(decisionOrbs)
       .where(eq(decisionOrbs.taskId, id));
 
+    const updates = await db
+      .select({
+        id: taskUpdates.id,
+        taskId: taskUpdates.taskId,
+        authorId: taskUpdates.authorId,
+        body: taskUpdates.body,
+        createdAt: taskUpdates.createdAt,
+        authorName: users.name,
+        authorAvatar: users.avatarUrl,
+      })
+      .from(taskUpdates)
+      .leftJoin(users, eq(taskUpdates.authorId, users.id))
+      .where(eq(taskUpdates.taskId, id))
+      .orderBy(desc(taskUpdates.createdAt));
+
+    const subtaskRows = await db
+      .select()
+      .from(subtasks)
+      .where(eq(subtasks.taskId, id))
+      .orderBy(subtasks.createdAt);
+
     return NextResponse.json({
       data: {
         ...task,
@@ -66,6 +87,15 @@ export async function GET(
           actor: e.actorId ? { id: e.actorId, name: e.actorName, avatarUrl: e.actorAvatar } : null,
         })),
         decisionOrbs: orbs,
+        updates: updates.map((u) => ({
+          id: u.id,
+          taskId: u.taskId,
+          authorId: u.authorId,
+          body: u.body,
+          createdAt: u.createdAt,
+          author: { id: u.authorId, name: u.authorName, avatarUrl: u.authorAvatar },
+        })),
+        subtasks: subtaskRows,
       },
     });
   } catch {

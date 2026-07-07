@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, pgEnum, integer } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, text, timestamp, pgEnum, integer, boolean } from "drizzle-orm/pg-core";
 
 export const userStatusEnum = pgEnum("user_status", ["active", "available", "blocked"]);
 export const taskStatusEnum = pgEnum("task_status", ["pending", "active", "blocked", "completed"]);
@@ -33,6 +33,26 @@ export const decisionOrbs = pgTable("decision_orbs", {
   status: decisionStatusEnum("status").default("pending").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   resolvedAt: timestamp("resolved_at"),
+});
+
+export const taskUpdates = pgTable("task_updates", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  taskId: uuid("task_id")
+    .references(() => tasks.id, { onDelete: "cascade" })
+    .notNull(),
+  authorId: uuid("author_id").references(() => users.id).notNull(),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const subtasks = pgTable("subtasks", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  taskId: uuid("task_id")
+    .references(() => tasks.id, { onDelete: "cascade" })
+    .notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  done: boolean("done").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const taskTimeline = pgTable("task_timeline", {

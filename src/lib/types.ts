@@ -23,6 +23,27 @@ export interface Task {
   assignedUser?: User;
   createdAt: string;
   updatedAt: string;
+  /** List endpoint only: latest progress note, null when none. */
+  latestUpdate?: { body: string; authorName: string | null; createdAt: string } | null;
+  subtaskCount?: number;
+  subtaskDoneCount?: number;
+}
+
+export interface TaskUpdate {
+  id: string;
+  taskId: string;
+  authorId: string;
+  body: string;
+  createdAt: string;
+  author?: Pick<User, "id" | "name" | "avatarUrl">;
+}
+
+export interface Subtask {
+  id: string;
+  taskId: string;
+  title: string;
+  done: boolean;
+  createdAt: string;
 }
 
 /**

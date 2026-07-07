@@ -37,14 +37,26 @@ export function TaskRow({ task, onClick }: TaskRowProps) {
         className={cn("w-2 h-2 rounded-full shrink-0", statusDot[task.status])}
         title={task.status}
       />
-      <span
-        className={cn(
-          "flex-1 truncate text-[13px]",
-          task.status === "completed" && "text-muted line-through"
+      <span className="flex-1 min-w-0">
+        <span
+          className={cn(
+            "block truncate text-[13px]",
+            task.status === "completed" && "text-muted line-through"
+          )}
+        >
+          {task.title}
+        </span>
+        {task.latestUpdate && (
+          <span className="block truncate text-xs text-muted">
+            {task.latestUpdate.body}
+          </span>
         )}
-      >
-        {task.title}
       </span>
+      {(task.subtaskCount ?? 0) > 0 && (
+        <span className="text-xs text-muted shrink-0">
+          {task.subtaskDoneCount}/{task.subtaskCount}
+        </span>
+      )}
       <span className={cn("w-16 text-xs shrink-0", urgencyStyle[task.urgencyLevel])}>
         {urgencyLabel[task.urgencyLevel]}
       </span>

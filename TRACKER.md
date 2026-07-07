@@ -121,6 +121,20 @@ Full replacement of the space-theme UI with a clean, minimal, light-theme design
 
 ---
 
+## Phase 8: Task Updates + Subtasks (2026-07-07)
+
+Per `docs/superpowers/specs/2026-07-06-task-updates-subtasks-design.md`. Motivating story: assignee posts "got 4/5 datasets, need one more from Swiggy POC, ETA 1 day" so founder/team head see status without asking.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 8.1 | Schema | ✅ Complete | `task_updates` (taskId cascade, authorId, body) + `subtasks` (taskId cascade, title, done) tables; pushed to Neon via drizzle-kit |
+| 8.2 | API | ✅ Complete | `GET /api/tasks/[id]` gains `updates`+`subtasks`; `POST /api/tasks/[id]/updates`, `POST /api/tasks/[id]/subtasks`, `PATCH/DELETE /api/subtasks/[id]`; `GET /api/tasks` gains `latestUpdate` + `subtaskCount`/`subtaskDoneCount` |
+| 8.3 | UI | ✅ Complete | TaskDetail: Subtasks checklist (add/toggle/hover-delete, n/m counter) + Updates section (textarea, "Posting as" select defaulting to assignee, newest-first list). TaskRow: muted latest-update snippet under title + "1/2" counter |
+| 8.4 | DB connectivity root cause | ✅ Complete | Neon HTTP driver routes c-2 cell hosts via `api.c-2.us-east-1.aws.neon.tech`, whose IPs this network blocks (yesterday's IPv4-first fix was coincidental). Permanent fix in `src/db/index.ts`: strip `-pooler` + `neonConfig.fetchEndpoint = host => https://host/sql` — queries endpoint host directly. No env var needed anymore |
+| 8.5 | Verification | ✅ Complete | Live browser 2026-07-07: add/toggle/delete subtask (counter 0/1→1/2), post update (attributed Luna Park, newest-first), row shows snippet + 1/2, lint 0 problems, prod build clean |
+
+---
+
 ## Status Legend
 
 | Icon | Meaning |
