@@ -6,9 +6,13 @@ import { TaskRow } from "@/components/tasks/TaskRow";
 import { TaskDetail } from "@/components/tasks/TaskDetail";
 import { NewTaskDialog } from "@/components/tasks/NewTaskDialog";
 import { useApi } from "@/lib/useApi";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { isManagerRole } from "@/lib/utils";
 import type { Task, SystemStat } from "@/lib/types";
 
 export default function TasksPage() {
+  const { user } = useAuth();
+  const isManager = isManagerRole(user?.role);
   const tasks = useApi<Task[]>("/api/tasks");
   const stats = useApi<SystemStat[]>("/api/stats");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -51,18 +55,20 @@ export default function TasksPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
-      <StatBar stats={stats.data || []} />
+      {isManager && <StatBar stats={stats.data || []} />}
 
       <div className="flex items-center justify-between py-4">
         <h1 className="text-[15px] font-semibold">
           Tasks <span className="text-muted font-normal">{taskList.length}</span>
         </h1>
-        <button
-          onClick={() => setCreating(true)}
-          className="px-3 py-1.5 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors cursor-pointer"
-        >
-          New task
-        </button>
+        {isManager && (
+          <button
+            onClick={() => setCreating(true)}
+            className="px-3 py-1.5 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors cursor-pointer"
+          >
+            New task
+          </button>
+        )}
       </div>
 
       {taskList.length === 0 ? (

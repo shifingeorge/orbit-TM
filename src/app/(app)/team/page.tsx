@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useApi } from "@/lib/useApi";
-import { cn, initials } from "@/lib/utils";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { AddMemberDialog } from "@/components/team/AddMemberDialog";
+import { cn, initials, isManagerRole } from "@/lib/utils";
 import type { User, UserStatus } from "@/lib/types";
 
 type FilterOption = UserStatus | "all";
@@ -21,8 +23,11 @@ const statusDot: Record<UserStatus, string> = {
 };
 
 export default function TeamPage() {
+  const { user } = useAuth();
+  const isManager = isManagerRole(user?.role);
   const users = useApi<(User & { taskCount: number })[]>("/api/users");
   const [filter, setFilter] = useState<FilterOption>("all");
+  const [adding, setAdding] = useState(false);
 
   if (users.loading) {
     return (
@@ -62,7 +67,7 @@ export default function TeamPage() {
         <h1 className="text-[15px] font-semibold">
           Team <span className="text-muted font-normal">{filtered.length}</span>
         </h1>
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
           {filters.map((f) => (
             <button
               key={f.value}
@@ -77,8 +82,26 @@ export default function TeamPage() {
               {f.label}
             </button>
           ))}
+          {isManager && (
+            <button
+              onClick={() => setAdding(true)}
+              className="ml-2 px-3 py-1.5 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors cursor-pointer"
+            >
+              Add member
+            </button>
+          )}
         </div>
       </div>
+
+      {adding && (
+        <AddMemberDialog
+          onClose={() => setAdding(false)}
+          onCreated={() => {
+            setAdding(false);
+            users.refetch();
+          }}
+        />
+      )}
 
       {filtered.length === 0 ? (
         <p className="text-[13px] text-muted py-16 text-center">No members.</p>

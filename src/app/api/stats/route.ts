@@ -2,8 +2,11 @@ import { db } from "@/db";
 import { tasks, users, decisionOrbs } from "@/db/schema";
 import { count, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { requireSession } from "@/lib/auth";
 
 export async function GET() {
+  const auth = await requireSession();
+  if (auth.error) return auth.error;
   try {
     const [taskStats] = await db
       .select({

@@ -16,6 +16,10 @@ export function formatRelativeTime(dateString: string): string {
   return `${diffDays}d ago`;
 }
 
+export function isManagerRole(role?: string | null): boolean {
+  return role === "manager" || role === "founder";
+}
+
 export function initials(name: string): string {
   return name
     .split(" ")

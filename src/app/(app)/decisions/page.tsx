@@ -2,9 +2,13 @@
 
 import { useState } from "react";
 import { useApi } from "@/lib/useApi";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { isManagerRole } from "@/lib/utils";
 import type { DecisionOrb } from "@/lib/types";
 
 export default function DecisionsPage() {
+  const { user } = useAuth();
+  const isManager = isManagerRole(user?.role);
   const decisions = useApi<DecisionOrb[]>("/api/decisions");
   const [actingId, setActingId] = useState<string | null>(null);
 
@@ -77,22 +81,26 @@ export default function DecisionsPage() {
                 </span>
               </div>
               <p className="text-[13px] text-muted mb-3">{orb.contextReason}</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => resolve(orb.id, "granted")}
-                  disabled={actingId === orb.id}
-                  className="px-3 py-1 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors disabled:opacity-50 cursor-pointer"
-                >
-                  {actingId === orb.id ? "..." : "Grant"}
-                </button>
-                <button
-                  onClick={() => resolve(orb.id, "denied")}
-                  disabled={actingId === orb.id}
-                  className="px-3 py-1 rounded-md border border-border text-xs text-danger hover:bg-surface transition-colors disabled:opacity-50 cursor-pointer"
-                >
-                  Deny
-                </button>
-              </div>
+              {isManager ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => resolve(orb.id, "granted")}
+                    disabled={actingId === orb.id}
+                    className="px-3 py-1 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    {actingId === orb.id ? "..." : "Grant"}
+                  </button>
+                  <button
+                    onClick={() => resolve(orb.id, "denied")}
+                    disabled={actingId === orb.id}
+                    className="px-3 py-1 rounded-md border border-border text-xs text-danger hover:bg-surface transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    Deny
+                  </button>
+                </div>
+              ) : (
+                <p className="text-xs text-muted">Awaiting a manager decision.</p>
+              )}
             </div>
           ))}
         </div>

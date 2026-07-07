@@ -4,10 +4,14 @@ export const userStatusEnum = pgEnum("user_status", ["active", "available", "blo
 export const taskStatusEnum = pgEnum("task_status", ["pending", "active", "blocked", "completed"]);
 export const urgencyEnum = pgEnum("urgency_level", ["low", "medium", "high", "critical"]);
 export const decisionStatusEnum = pgEnum("decision_status", ["pending", "granted", "denied"]);
+export const roleEnum = pgEnum("user_role", ["founder", "manager", "staff"]);
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).unique().notNull(),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  role: roleEnum("role").default("staff").notNull(),
   avatarUrl: varchar("avatar_url", { length: 512 }),
   status: userStatusEnum("status").default("active").notNull(),
   capacityLimit: integer("capacity_limit").default(5).notNull(),

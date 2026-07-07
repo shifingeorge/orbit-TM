@@ -2,15 +2,27 @@ export type UserStatus = "active" | "available" | "blocked";
 export type TaskStatus = "pending" | "active" | "blocked" | "completed";
 export type UrgencyLevel = "low" | "medium" | "high" | "critical";
 export type DecisionStatus = "pending" | "granted" | "denied";
+export type UserRole = "founder" | "manager" | "staff";
 
 export interface User {
   id: string;
   name: string;
+  email?: string;
+  role?: UserRole;
   avatarUrl: string | null;
   status: UserStatus;
   capacityLimit: number;
   createdAt: string;
   taskCount?: number;
+}
+
+/** The current authenticated user, as returned by GET /api/me. */
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  avatarUrl: string | null;
 }
 
 export interface Task {

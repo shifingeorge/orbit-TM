@@ -3,11 +3,14 @@ import { tasks, users, taskTimeline, decisionOrbs, taskUpdates, subtasks } from 
 import { desc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import type { UpdateTaskInput } from "@/lib/types";
+import { requireSession, requireManager, isManager, forbidIfNotOwner } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireSession();
+  if (auth.error) return auth.error;
   try {
     const { id } = await params;
 
@@ -32,6 +35,9 @@ export async function GET(
     if (!task) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
+
+    const ownershipError = forbidIfNotOwner(auth.session, task.assignedUserId);
+    if (ownershipError) return ownershipError;
 
     // Fetch timeline
     const timeline = await db
@@ -107,9 +113,37 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireSession();
+  if (auth.error) return auth.error;
+  const { session } = auth;
   try {
     const { id } = await params;
     const body: UpdateTaskInput = await request.json();
+
+    const [existing] = await db
+      .select({ assignedUserId: tasks.assignedUserId })
+      .from(tasks)
+      .where(eq(tasks.id, id));
+    if (!existing) {
+      return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    }
+
+    const ownershipError = forbidIfNotOwner(session, existing.assignedUserId);
+    if (ownershipError) return ownershipError;
+
+    // Staff may only change status on their own task; managers may edit anything.
+    if (
+      !isManager(session.role) &&
+      (body.title !== undefined ||
+        body.description !== undefined ||
+        body.urgencyLevel !== undefined ||
+        body.assignedUserId !== undefined)
+    ) {
+      return NextResponse.json(
+        { error: "Staff may only change task status" },
+        { status: 403 }
+      );
+    }
 
     const updateData: Record<string, unknown> = { updatedAt: new Date() };
     const timelineEvents: string[] = [];
@@ -149,7 +183,7 @@ export async function PATCH(
       await db.insert(taskTimeline).values({
         taskId: id,
         event,
-        actorId: body.assignedUserId || null,
+        actorId: session.userId,
       });
     }
 
@@ -163,6 +197,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireManager();
+  if (auth.error) return auth.error;
   try {
     const { id } = await params;
 

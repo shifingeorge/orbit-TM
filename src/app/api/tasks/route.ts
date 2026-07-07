@@ -3,8 +3,12 @@ import { tasks, users, taskTimeline, taskUpdates, subtasks } from "@/db/schema";
 import { count, desc, eq, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import type { CreateTaskInput } from "@/lib/types";
+import { requireSession, requireManager, isManager } from "@/lib/auth";
 
 export async function GET() {
+  const auth = await requireSession();
+  if (auth.error) return auth.error;
+  const { session } = auth;
   try {
     const allTasks = await db
       .select({
@@ -20,7 +24,8 @@ export async function GET() {
         assignedUserAvatar: users.avatarUrl,
       })
       .from(tasks)
-      .leftJoin(users, eq(tasks.assignedUserId, users.id));
+      .leftJoin(users, eq(tasks.assignedUserId, users.id))
+      .where(isManager(session.role) ? undefined : eq(tasks.assignedUserId, session.userId));
 
     // Latest update per task: rows come back newest-first, first hit per task wins.
     const updateRows = await db
@@ -77,6 +82,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireManager();
+  if (auth.error) return auth.error;
   try {
     const body: CreateTaskInput = await request.json();
     const { title, description, urgencyLevel, assignedUserId } = body;

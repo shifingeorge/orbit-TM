@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, initials } from "@/lib/utils";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const navItems = [
   { href: "/", label: "Tasks" },
@@ -40,11 +41,19 @@ function setCollapsedStore(value: boolean) {
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user } = useAuth();
   const collapsed = useSyncExternalStore(
     subscribe,
     getSnapshot,
     getServerSnapshot
   );
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+    router.refresh();
+  }
 
   // Mirror the collapsed flag onto <html data-collapsed> so the
   // server-rendered layout (which has no knowledge of localStorage) can
@@ -92,11 +101,46 @@ export function Sidebar() {
         })}
       </nav>
 
+      <div className="mt-auto flex flex-col gap-0.5">
+        {user && (
+          <>
+            <div
+              title={collapsed ? `${user.name} · ${user.role}` : undefined}
+              className={cn(
+                "flex items-center gap-2 py-1.5 whitespace-nowrap overflow-hidden",
+                collapsed ? "px-1 justify-center" : "px-1"
+              )}
+            >
+              <span className="inline-flex shrink-0 w-6 h-6 rounded-full bg-surface border border-border items-center justify-center text-[10px] text-muted">
+                {initials(user.name)}
+              </span>
+              {!collapsed && (
+                <span className="flex flex-col min-w-0">
+                  <span className="text-[13px] truncate">{user.name}</span>
+                  <span className="text-[11px] text-muted capitalize">{user.role}</span>
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              title={collapsed ? "Logout" : undefined}
+              className={cn(
+                "py-1.5 rounded-md text-[13px] text-muted hover:text-text hover:bg-border/30 transition-colors whitespace-nowrap overflow-hidden",
+                collapsed ? "px-1 text-center" : "px-3 text-left"
+              )}
+            >
+              {collapsed ? "↵" : "Logout"}
+            </button>
+          </>
+        )}
+      </div>
+
       <button
         type="button"
         onClick={toggleCollapsed}
         title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        className="mt-auto flex items-center justify-center rounded-md px-1 py-1.5 text-muted hover:text-text hover:bg-border/30 transition-colors"
+        className="mt-2 flex items-center justify-center rounded-md px-1 py-1.5 text-muted hover:text-text hover:bg-border/30 transition-colors"
       >
         <svg
           width="14"

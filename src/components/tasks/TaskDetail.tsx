@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Dialog } from "@/components/ui/Dialog";
 import { useApi } from "@/lib/useApi";
-import { cn, formatRelativeTime, initials } from "@/lib/utils";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { cn, formatRelativeTime, initials, isManagerRole } from "@/lib/utils";
 import type {
   Task,
   TaskStatus,
@@ -40,6 +41,8 @@ const statusLabel: Record<TaskStatus, string> = {
 };
 
 export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
+  const { user } = useAuth();
+  const isManager = isManagerRole(user?.role);
   const [detail, setDetail] = useState<TaskDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -53,7 +56,6 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
 
   const [newSubtask, setNewSubtask] = useState("");
   const [updateBody, setUpdateBody] = useState("");
-  const [postingAs, setPostingAs] = useState<string>("");
 
   const [editingUpdateId, setEditingUpdateId] = useState<string | null>(null);
   const [editUpdateBody, setEditUpdateBody] = useState("");
@@ -72,7 +74,6 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
       setEditDescription(data.description || "");
       setEditUrgency(data.urgencyLevel);
       setEditAssignee(data.assignedUserId);
-      setPostingAs((prev) => prev || data.assignedUserId || "");
     } catch (err) {
       console.error("Failed to fetch task detail:", err);
     } finally {
@@ -186,14 +187,14 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
 
   const postUpdate = async () => {
     const body = updateBody.trim();
-    const authorId = postingAs || users?.[0]?.id;
-    if (!body || !authorId) return;
+    if (!body) return;
+    // authorId is derived from the session server-side.
     const ok = await mutate(
       `/api/tasks/${taskId}/updates`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body, authorId }),
+        body: JSON.stringify({ body }),
       },
       "post update"
     );
@@ -256,7 +257,7 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
               <h2 className="text-[15px] font-semibold">{detail.title}</h2>
             )}
             <div className="flex items-center gap-2 shrink-0">
-              {!editing && (
+              {!editing && isManager && (
                 <button
                   onClick={() => setEditing(true)}
                   className="text-xs text-muted hover:text-text transition-colors cursor-pointer"
@@ -471,22 +472,26 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
                   className="border border-border rounded-md p-3 mb-2"
                 >
                   <p className="text-[13px] mb-3">{orb.contextReason}</p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => resolveDecision(orb.id, "granted")}
-                      disabled={saving}
-                      className="px-3 py-1 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors disabled:opacity-50 cursor-pointer"
-                    >
-                      Grant
-                    </button>
-                    <button
-                      onClick={() => resolveDecision(orb.id, "denied")}
-                      disabled={saving}
-                      className="px-3 py-1 rounded-md border border-border text-xs text-danger hover:bg-surface transition-colors disabled:opacity-50 cursor-pointer"
-                    >
-                      Deny
-                    </button>
-                  </div>
+                  {isManager ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => resolveDecision(orb.id, "granted")}
+                        disabled={saving}
+                        className="px-3 py-1 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        Grant
+                      </button>
+                      <button
+                        onClick={() => resolveDecision(orb.id, "denied")}
+                        disabled={saving}
+                        className="px-3 py-1 rounded-md border border-border text-xs text-danger hover:bg-surface transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        Deny
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted">Awaiting a manager decision.</p>
+                  )}
                 </div>
               ))}
             </div>
@@ -505,16 +510,6 @@ export function TaskDetail({ taskId, onClose, onChanged }: TaskDetailProps) {
                 className={`${inputClass} resize-none`}
               />
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted shrink-0">Posting as</span>
-                <select
-                  value={postingAs || users?.[0]?.id || ""}
-                  onChange={(e) => setPostingAs(e.target.value)}
-                  className="text-xs border border-border rounded-md px-2 py-1 focus:outline-none focus:border-accent cursor-pointer"
-                >
-                  {(users || []).map((u) => (
-                    <option key={u.id} value={u.id}>{u.name}</option>
-                  ))}
-                </select>
                 <button
                   onClick={postUpdate}
                   disabled={saving || !updateBody.trim()}

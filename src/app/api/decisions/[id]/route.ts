@@ -2,11 +2,14 @@ import { db } from "@/db";
 import { decisionOrbs, tasks } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+import { requireManager } from "@/lib/auth";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireManager();
+  if (auth.error) return auth.error;
   try {
     const { id } = await params;
     const body = await request.json();

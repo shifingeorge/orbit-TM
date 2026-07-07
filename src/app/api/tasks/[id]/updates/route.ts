@@ -2,30 +2,37 @@ import { db } from "@/db";
 import { tasks, taskUpdates } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+import { requireSession, forbidIfNotOwner } from "@/lib/auth";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireSession();
+  if (auth.error) return auth.error;
   try {
     const { id } = await params;
-    const { body, authorId } = await request.json();
+    const { body } = await request.json();
 
     if (!body || typeof body !== "string" || body.trim().length === 0) {
       return NextResponse.json({ error: "Update body is required" }, { status: 400 });
     }
-    if (!authorId || typeof authorId !== "string") {
-      return NextResponse.json({ error: "Author is required" }, { status: 400 });
-    }
 
-    const [task] = await db.select({ id: tasks.id }).from(tasks).where(eq(tasks.id, id));
+    const [task] = await db
+      .select({ id: tasks.id, assignedUserId: tasks.assignedUserId })
+      .from(tasks)
+      .where(eq(tasks.id, id));
     if (!task) {
       return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
+    const ownershipError = forbidIfNotOwner(auth.session, task.assignedUserId);
+    if (ownershipError) return ownershipError;
+
+    // authorId is taken from the session, never the request body (no spoofing).
     const [created] = await db
       .insert(taskUpdates)
-      .values({ taskId: id, authorId, body: body.trim() })
+      .values({ taskId: id, authorId: auth.session.userId, body: body.trim() })
       .returning();
 
     return NextResponse.json({ data: created }, { status: 201 });

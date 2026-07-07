@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
+import bcrypt from "bcryptjs";
 import * as schema from "./schema";
 
 async function seed() {
@@ -8,16 +9,19 @@ async function seed() {
 
   console.log("🌱 Seeding database...");
 
-  // Seed users
+  // Shared demo password for all seeded accounts: "orbittm123".
+  const passwordHash = await bcrypt.hash("orbittm123", 10);
+
+  // Seed users. Aria = founder, Marcus = manager, everyone else = staff.
   const insertedUsers = await db
     .insert(schema.users)
     .values([
-      { name: "Aria Chen", avatarUrl: "https://api.dicebear.com/9.x/notionists/svg?seed=aria", status: "active" as const, capacityLimit: 5 },
-      { name: "Marcus Webb", avatarUrl: "https://api.dicebear.com/9.x/notionists/svg?seed=marcus", status: "active" as const, capacityLimit: 4 },
-      { name: "Luna Park", avatarUrl: "https://api.dicebear.com/9.x/notionists/svg?seed=luna", status: "available" as const, capacityLimit: 6 },
-      { name: "Kai Nakamura", avatarUrl: "https://api.dicebear.com/9.x/notionists/svg?seed=kai", status: "blocked" as const, capacityLimit: 4 },
-      { name: "Zara Mitchell", avatarUrl: "https://api.dicebear.com/9.x/notionists/svg?seed=zara", status: "active" as const, capacityLimit: 5 },
-      { name: "Ravi Patel", avatarUrl: "https://api.dicebear.com/9.x/notionists/svg?seed=ravi", status: "active" as const, capacityLimit: 3 },
+      { name: "Aria Chen", email: "aria@orbittm.dev", passwordHash, role: "founder" as const, avatarUrl: "https://api.dicebear.com/9.x/notionists/svg?seed=aria", status: "active" as const, capacityLimit: 5 },
+      { name: "Marcus Webb", email: "marcus@orbittm.dev", passwordHash, role: "manager" as const, avatarUrl: "https://api.dicebear.com/9.x/notionists/svg?seed=marcus", status: "active" as const, capacityLimit: 4 },
+      { name: "Luna Park", email: "luna@orbittm.dev", passwordHash, role: "staff" as const, avatarUrl: "https://api.dicebear.com/9.x/notionists/svg?seed=luna", status: "available" as const, capacityLimit: 6 },
+      { name: "Kai Nakamura", email: "kai@orbittm.dev", passwordHash, role: "staff" as const, avatarUrl: "https://api.dicebear.com/9.x/notionists/svg?seed=kai", status: "blocked" as const, capacityLimit: 4 },
+      { name: "Zara Mitchell", email: "zara@orbittm.dev", passwordHash, role: "staff" as const, avatarUrl: "https://api.dicebear.com/9.x/notionists/svg?seed=zara", status: "active" as const, capacityLimit: 5 },
+      { name: "Ravi Patel", email: "ravi@orbittm.dev", passwordHash, role: "staff" as const, avatarUrl: "https://api.dicebear.com/9.x/notionists/svg?seed=ravi", status: "active" as const, capacityLimit: 3 },
     ])
     .returning();
 
