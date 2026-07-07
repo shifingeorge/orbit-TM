@@ -30,8 +30,8 @@ export async function PATCH(
       return NextResponse.json({ error: "Decision not found" }, { status: 404 });
     }
 
-    // If granted, unblock the associated task
-    if (status === "granted") {
+    // If granted, unblock the associated task (standalone requests have none)
+    if (status === "granted" && updatedOrb.taskId) {
       await db
         .update(tasks)
         .set({ status: "active", updatedAt: new Date() })

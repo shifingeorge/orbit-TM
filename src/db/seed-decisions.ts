@@ -85,6 +85,14 @@ async function seedDecisions() {
         status: "denied" as const,
         resolvedAt: new Date(now - 1 * 24 * 60 * 60 * 1000),
       },
+      // 5. Standalone request, no task — e.g. a content idea with nothing to link yet
+      {
+        taskId: null,
+        requestedBy: zara.id,
+        contextReason:
+          "Idea: a weekly customer-spotlight newsletter segment. No task yet — flagging for approval before I spin one up.",
+        status: "pending" as const,
+      },
     ])
     .returning();
 

@@ -31,7 +31,7 @@ export const tasks = pgTable("tasks", {
 
 export const decisionOrbs = pgTable("decision_orbs", {
   id: uuid("id").defaultRandom().primaryKey(),
-  taskId: uuid("task_id").references(() => tasks.id).notNull(),
+  taskId: uuid("task_id").references(() => tasks.id),
   requestedBy: uuid("requested_by").references(() => users.id).notNull(),
   contextReason: text("context_reason").notNull(),
   status: decisionStatusEnum("status").default("pending").notNull(),

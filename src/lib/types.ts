@@ -66,7 +66,7 @@ export interface Subtask {
  */
 export interface DecisionOrb {
   id: string;
-  taskId: string;
+  taskId: string | null;
   requestedBy: string;
   contextReason: string;
   status: DecisionStatus;
@@ -104,4 +104,9 @@ export interface UpdateTaskInput {
   status?: TaskStatus;
   urgencyLevel?: UrgencyLevel;
   assignedUserId?: string | null;
+}
+
+export interface CreateDecisionInput {
+  contextReason: string;
+  taskId?: string;
 }

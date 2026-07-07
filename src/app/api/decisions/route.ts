@@ -1,8 +1,9 @@
 import { db } from "@/db";
 import { decisionOrbs, tasks, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
+import type { CreateDecisionInput } from "@/lib/types";
 
 export async function GET() {
   const auth = await requireSession();
@@ -46,5 +47,32 @@ export async function GET() {
     return NextResponse.json({ data: formatted });
   } catch {
     return NextResponse.json({ error: "Failed to fetch decisions" }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const auth = await requireSession();
+  if (auth.error) return auth.error;
+  const { session } = auth;
+  try {
+    const body: CreateDecisionInput = await request.json();
+    const { contextReason, taskId } = body;
+
+    if (!contextReason || typeof contextReason !== "string" || contextReason.trim().length === 0) {
+      return NextResponse.json({ error: "Context reason is required" }, { status: 400 });
+    }
+
+    const [created] = await db
+      .insert(decisionOrbs)
+      .values({
+        taskId: taskId || null,
+        requestedBy: session.userId,
+        contextReason: contextReason.trim(),
+      })
+      .returning();
+
+    return NextResponse.json({ data: created }, { status: 201 });
+  } catch {
+    return NextResponse.json({ error: "Failed to create decision request" }, { status: 500 });
   }
 }
