@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:decisions": "tsx --env-file=.env.local src/db/seed-decisions.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
