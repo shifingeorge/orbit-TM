@@ -26,6 +26,15 @@ body {
   line-height: 1.5;
 }
 
+.app-main {
+  margin-left: 200px;
+  transition: margin-left 150ms ease-in-out;
+}
+
+html[data-collapsed="true"] .app-main {
+  margin-left: 56px;
+}
+
 .skeleton {
   background: var(--color-surface);
   border-radius: var(--radius-md);
